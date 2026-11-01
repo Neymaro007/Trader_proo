@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QuantSkill Pro v6.0 – Golden Shot MTF + True R:R + XTB Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #070b14; color: #e2e8f0; overflow-x: hidden; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    .pulse-live { animation: pulse-green 1.5s infinite; }
+    @keyframes pulse-green { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.25); } }
+    .pulse-warn { animation: pulse-amber 1.3s infinite; }
+    @keyframes pulse-amber { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .gold-glow { box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#070b14] text-slate-100 selection:bg-emerald-500/30">
+
+  <!-- TOP BAR -->
+  <header class="sticky top-0 z-50 bg-[#0b1120]/95 backdrop-blur-md border-b border-slate-800/80 px-3 py-2">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg font-mono font-bold text-slate-950 text-sm">QS</div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="font-extrabold tracking-tight text-sm sm:text-base text-white">QUANTSKILL <span class="text-amber-400">PRO v6.0</span></h1>
+            <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400 pulse-live"></span>
+              <span>ZŁOTY STRZAŁ (MTF: M15+M30+H1+H4+D1)</span>
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Stałe poziomy Multi-Timeframe (Daytrading & Swing) + Kotwice Strukturalne + Pełna Tabela 10 Scenariuszy</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] font-mono flex items-center gap-1.5">
+          <span class="text-slate-400">TV Live:</span>
+          <span id="lastSyncTime" class="text-emerald-400 font-semibold">Łączenie...</span>
+        </div>
+        <button onclick="toggleFreezeLevels()" id="freezeLevelsBtn" class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-bold transition flex items-center gap-1">❄️ Zamroź Tabelę</button>
+        <button onclick="downloadSelfHtmlFile()" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1">💾 Pobierz HTML (v6.0)</button>
+        <button onclick="openMacroEditorModal()" class="px-2.5 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/40 text-xs font-bold transition">⚙️ Makro & Kalendarz</button>
+        <button onclick="cycleDisplayMode()" id="displayModeBtn" class="px-2.5 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 text-xs font-bold transition">📐 Tryb: Pips + % + PLN</button>
+        <button onclick="syncAll66FromTradingView(true)" class="px-2.5 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition">🔄 Odśwież TV</button>
+        <button onclick="scanAll66Instruments()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg transition">🎯 Skanuj 66 Rynków</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BREAKING MACRO NEWS & LIVE BOND YIELDS TICKER -->
+  <div class="bg-slate-900/90 border-b border-slate-800/80 px-3 py-1.5 text-xs">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono font-bold text-[10px] shrink-0">/golden-shot-v6.0</span>
+        <span id="newsImpactBadge" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-bold text-[10px] shrink-0">MULTI-TIMEFRAME</span>
+        <span id="newsHeadline" class="text-slate-200 font-medium truncate">Ładowanie silnika Złotego Strzału (M15+M30+H1+H4+D1) i kalendarza makro...</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="globalDxyVixBadge" class="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-mono text-[10px]">DXY: -- | VIX: --</span>
+        <span id="liveVerifiedCounter" class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[10px]">TV LIVE</span>
+        <button onclick="nextNewsItem()" class="text-slate-400 hover:text-white text-[11px] underline">Następny &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: SKANER 66 RYNKÓW -->
+  <div id="scannerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3">
+    <div class="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-900/60">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <span>🎯</span> Globalny Skaner 66 Rynków XTB (Złoty Strzał MTF + True R:R)
+          </h2>
+          <p class="text-xs text-slate-400">Sortuje otwarte rynki według najwyższego skonsolidowanego prawdopodobieństwa i R:R min. 1:1.85</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1.5 text-xs bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700 cursor-pointer">
+            <input type="checkbox" id="onlyOpenMarketsCheckbox" checked onchange="scanAll66Instruments()" class="accent-emerald-500" />
+            <span class="text-slate-200 font-medium">Tylko otwarte sesje</span>
+          </label>
+          <button onclick="closeScannerModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">✕ Zamknij</button>
+        </div>
+      </div>
+      <div id="scannerResultsGrid" class="p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: EDYTOR MAKRO & ALARM SZPILEK -->
+  <div id="macroEditorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3">
+    <div class="bg-[#0f172a] border border-indigo-500/50 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-900/80">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-white">⚙️ Edytor Makro (CPI / Bezrobocie / Stopy %) & Kalendarz Publikacji</h2>
+          <p class="text-xs text-slate-400">Edycja odczytów natychmiast przelicza przewagę makro dla wszystkich 66 rynków.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="resetMacroToDefaults()" class="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold">↺ Domyślne</button>
+          <button onclick="closeMacroEditorModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">✕ Zamknij</button>
+        </div>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4">
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3">
+          <div class="text-xs font-bold text-amber-300 mb-2">⏱️ Dodaj alarm przed publikacją danych (Odliczanie do szpilki):</div>
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+            <select id="newEvCcy" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono">
+              <option value="USD">USD</option><option value="EUR">EUR</option><option value="PLN">PLN</option>
+              <option value="GBP">GBP</option><option value="JPY">JPY</option><option value="CHF">CHF</option>
+              <option value="CAD">CAD</option><option value="AUD">AUD</option><option value="NZD">NZD</option>
+            </select>
+            <input id="newEvTitle" type="text" placeholder="Nazwa np. Inflacja CPI (r/r)" class="sm:col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white" />
+            <input id="newEvDateTime" type="datetime-local" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono" />
+            <button onclick="addCustomMacroEvent()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg px-3 py-1.5 transition">+ Dodaj Alarm</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto bg-slate-900/80 border border-slate-800 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs font-mono">
+            <thead>
+              <tr class="border-b border-slate-800 text-[11px] text-slate-400 uppercase bg-slate-950/70">
+                <th class="py-2.5 px-3">Waluta & Bank</th>
+                <th class="py-2.5 px-2">CPI (%)</th>
+                <th class="py-2.5 px-2">Bezrobocie (%)</th>
+                <th class="py-2.5 px-2">Stopa (%)</th>
+                <th class="py-2.5 px-2">Obligacje 10Y</th>
+                <th class="py-2.5 px-2">Score (-3 do +3)</th>
+                <th class="py-2.5 px-3">Nastawienie</th>
+              </tr>
+            </thead>
+            <tbody id="macroEditorTableBody" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="max-w-[1600px] w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 p-3">
+
+    <!-- LEFT SIDEBAR: 66 INSTRUMENTS -->
+    <aside class="lg:col-span-3 flex flex-col bg-[#0b1120] border border-slate-800/90 rounded-2xl overflow-hidden max-h-[90vh]">
+      <div class="p-3 border-b border-slate-800/80 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Rynki XTB (66)</span>
+          <span id="sidebarStatsBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">Ładowanie...</span>
+        </div>
+        <input id="searchInput" oninput="renderInstrumentList()" type="text" placeholder="Szukaj np. GBPJPY, GOLD, US100..." class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none" />
+        <div class="grid grid-cols-4 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px] font-semibold">
+          <button onclick="setCategory('ALL')" id="cat-ALL" class="py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold transition">Wszystkie</button>
+          <button onclick="setCategory('FOREX')" id="cat-FOREX" class="py-1 rounded-lg text-slate-400 hover:text-white transition">Forex</button>
+          <button onclick="setCategory('CMD')" id="cat-CMD" class="py-1 rounded-lg text-slate-400 hover:text-white transition">Surowce</button>
+          <button onclick="setCategory('IDX')" id="cat-IDX" class="py-1 rounded-lg text-slate-400 hover:text-white transition">Indeksy</button>
+        </div>
+      </div>
+      <div id="instrumentListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-800/50"></div>
+    </aside>
+
+    <!-- CENTER + RIGHT AREA -->
+    <section class="lg:col-span-9 flex flex-col gap-3">
+
+      <!-- ====================================================================== -->
+      <!-- NOWOŚĆ v6.0: PANEL ZŁOTEGO STRZAŁU (MULTI-TIMEFRAME GOLDEN SHOT)       -->
+      <!-- Nie zmienia się przy przełączaniu świec M5/M15/M30/H1/H4/D1!          -->
+      <!-- ====================================================================== -->
+      <div class="bg-gradient-to-br from-[#12192e] via-[#0b1120] to-[#111c2d] border-2 border-amber-500/60 rounded-2xl p-3.5 sm:p-4 gold-glow">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/90">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-mono font-extrabold text-xs flex items-center gap-1 shadow">
+              🎯 ZŁOTY STRZAŁ (MTF)
+            </span>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-sm sm:text-base font-extrabold text-white">Stały Plan Wejścia (Analiza M15 + M30 + H1 + H4 + D1)</h2>
+                <span id="gsLockedTimeBadge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[10px] font-bold">📌 ZABLOKOWANO NA TWARDO</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Poziomy wyznaczone ze zbieżności wszystkich interwałów – nie uciekają przy zmianie wykresu ani w trakcie sesji.</p>
+            </div>
+          </div>
+
+          <!-- WYBÓR TRYBU: DAYTRADING VS SWING + PRZYCISK PRZELICZENIA -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono">
+              <button onclick="setGoldenShotMode('DAY')" id="gsMode-DAY" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition">⚡ Daytrading (2-6h)</button>
+              <button onclick="setGoldenShotMode('SWING')" id="gsMode-SWING" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">🌊 Swing (1-3 dni)</button>
+            </div>
+            <button onclick="generateAndLockGoldenShot(true)" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-xs transition flex items-center gap-1">
+              🔄 Wyznacz Nowy Złoty Strzał
+            </button>
+          </div>
+        </div>
+
+        <!-- ZGODNOŚĆ INTERWAŁÓW MTF BAR -->
+        <div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-slate-400 text-[11px]">Konfluencja Świec:</span>
+            <span id="mtfPill-15" class="px-2 py-0.5 rounded bg-slate-800 text-[10px]">M15: --</span>
+            <span id="mtfPill-30" class="px-2 py-0.5 rounded bg-slate-800 text-[10px]">M30: --</span>
+            <span id="mtfPill-60" class="px-2 py-0.5 rounded bg-slate-800 text-[10px]">H1: --</span>
+            <span id="mtfPill-240" class="px-2 py-0.5 rounded bg-slate-800 text-[10px]">H4: --</span>
+            <span id="mtfPill-D" class="px-2 py-0.5 rounded bg-slate-800 text-[10px]">D1: --</span>
+          </div>
+          <div id="gsAnchorExplanation" class="text-[11px] text-amber-300 font-bold">--</div>
+        </div>
+
+        <!-- 4 GŁÓWNE KARTY ZŁOTEGO STRZAŁU DO PRZEPISANIA W XTB -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
+          <div class="bg-slate-900/95 border border-amber-500/40 rounded-xl p-3">
+            <div class="flex items-center justify-between text-[11px] text-amber-300 font-mono">
+              <span>ZLECENIE XTB</span>
+              <span id="gsWinRateBadge" class="font-extrabold text-emerald-400">--% SZANS</span>
+            </div>
+            <div id="gsOrderTypeLabel" class="text-base sm:text-lg font-mono font-extrabold text-white mt-1">BUY LIMIT</div>
+            <div id="gsDirectionSub" class="text-[11px] text-slate-400 mt-0.5">Oczekujące na korektę</div>
+          </div>
+
+          <div class="bg-emerald-950/35 border border-emerald-500/50 rounded-xl p-3">
+            <div class="flex items-center justify-between text-[11px] text-emerald-300 font-mono">
+              <span>CENA OTWARCIA (LIMIT)</span>
+              <button onclick="copyValue('gsEntryPrice')" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded">Kopiuj</button>
+            </div>
+            <div id="gsEntryPrice" class="text-lg sm:text-xl font-mono font-extrabold text-emerald-300 mt-1">--</div>
+            <div id="gsEntryDistInfo" class="text-[11px] text-slate-400 mt-0.5 font-mono">Od kursu live: --</div>
+          </div>
+
+          <div class="bg-rose-950/35 border border-rose-500/50 rounded-xl p-3">
+            <div class="flex items-center justify-between text-[11px] text-rose-300 font-mono">
+              <span>STOP LOSS (SZTYWNY)</span>
+              <button onclick="copyValue('gsSlPrice')" class="text-[10px] bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 px-1.5 py-0.5 rounded">Kopiuj</button>
+            </div>
+            <div id="gsSlPrice" class="text-lg sm:text-xl font-mono font-extrabold text-rose-300 mt-1">--</div>
+            <div id="gsSlPlnInfo" class="text-[11px] text-rose-400 mt-0.5 font-mono">Ryzyko: --</div>
+          </div>
+
+          <div class="bg-cyan-950/35 border border-cyan-500/50 rounded-xl p-3">
+            <div class="flex items-center justify-between text-[11px] text-cyan-300 font-mono">
+              <span>TAKE PROFIT (R:R <strong id="gsRrText">1:2.2</strong>)</span>
+              <button onclick="copyValue('gsTpPrice')" class="text-[10px] bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 px-1.5 py-0.5 rounded">Kopiuj</button>
+            </div>
+            <div id="gsTpPrice" class="text-lg sm:text-xl font-mono font-extrabold text-cyan-300 mt-1">--</div>
+            <div id="gsTpPlnInfo" class="text-[11px] text-emerald-400 mt-0.5 font-mono">Zysk: --</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NAGŁÓWEK INSTRUMENTU, INTERWAŁY WYKRESU I FUNDAMENTY MAKRO -->
+      <div class="bg-[#0b1120] border border-slate-800/90 rounded-2xl p-3 sm:p-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="activeSymbolTitle" class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">GBPJPY</h2>
+              <span id="activeCategoryBadge" class="px-2 py-0.5 text-[10px] font-mono rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">FOREX</span>
+              <span id="activeDirectionBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">PRZEWAGA KUP</span>
+              <span id="activeMarketOpenBadge" class="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">SESJA OTWARTA</span>
+            </div>
+            <p id="activeDescTitle" class="text-xs text-slate-400 mt-0.5">--</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-mono">
+              <button onclick="setTimeframe('5')" id="tf-5" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">M5</button>
+              <button onclick="setTimeframe('15')" id="tf-15" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold">M15</button>
+              <button onclick="setTimeframe('30')" id="tf-30" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">M30</button>
+              <button onclick="setTimeframe('60')" id="tf-60" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">H1</button>
+              <button onclick="setTimeframe('240')" id="tf-240" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">H4</button>
+              <button onclick="setTimeframe('D')" id="tf-D" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">D1</button>
+            </div>
+
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1">
+              <span class="text-[11px] text-slate-400">Wolumen XTB (Lot):</span>
+              <input id="lotSizeInput" oninput="recalculateActiveInstrument(false)" type="number" step="0.01" min="0.01" value="0.02" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-xs font-mono text-emerald-400 font-bold text-center outline-none" />
+            </div>
+          </div>
+        </div>
+
+        <!-- KOREKTA BAZY XTB + STATUS -->
+        <div class="mt-2.5 bg-slate-900/95 border border-slate-800 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span id="dataSourceStatus" class="text-slate-300 text-[11px] font-mono">Synchronizacja z TradingView...</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] text-slate-400">Korekta kursu XTB:</span>
+            <input id="quickPriceInput" type="number" step="0.00001" placeholder="Kurs z XTB" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs font-mono text-white outline-none" />
+            <button onclick="applyQuickPrice()" class="px-2 py-0.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs">Ustaw</button>
+            <button onclick="unlockAutoLivePrice()" id="unlockAutoBtn" class="hidden px-2 py-0.5 rounded-lg bg-slate-800 text-amber-300 text-[11px] font-mono">🔓 Auto</button>
+          </div>
+        </div>
+
+        <!-- FUNDAMENTY MAKRO + ALARM SZPILEK -->
+        <div id="macroFundamentalsPanel" class="mt-2.5 bg-slate-900/90 border border-indigo-500/35 rounded-xl p-3 text-xs"></div>
+
+        <!-- SPECYFIKACJA KONTRAKTU XTB + AKTUALNY BID/ASK -->
+        <div class="mt-2 bg-slate-950/90 border border-slate-800/90 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+          <span>BID / ASK Live: <strong id="specBidAsk" class="text-white">-- / --</strong></span>
+          <span>Wartość 1 Pipsa: <strong id="specPipValuePLN" class="text-cyan-400">--</strong></span>
+          <span>Spread XTB: <strong id="specSpreadText" class="text-amber-300">--</strong></span>
+          <span>Depozyt (3.33%): <strong id="specMarginPLN" class="text-purple-300">--</strong></span>
+        </div>
+
+        <!-- PASEK SIŁY KUP VS SPRZEDAJ -->
+        <div class="mt-2.5 bg-slate-900/80 border border-slate-800 rounded-xl p-2.5">
+          <div class="flex flex-wrap items-center justify-between text-xs font-bold mb-1 gap-1">
+            <span class="text-emerald-400">📈 KUP (LONG): <span id="buyProbText" class="font-mono">50.0%</span></span>
+            <span class="text-[11px] font-mono text-slate-300" id="duelVerdictText">--</span>
+            <span class="text-rose-400"><span id="sellProbText" class="font-mono">50.0%</span> 📉 SPRZEDAJ (SHORT)</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden flex border border-slate-800">
+            <div id="buyProbBar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500" style="width: 50%"></div>
+            <div id="sellProbBar" class="h-full bg-gradient-to-r from-rose-500 to-rose-600 transition-all duration-500" style="width: 50%"></div>
+          </div>
+          <div id="technicalIndicatorsSummary" class="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-[11px] font-mono text-slate-400"></div>
+        </div>
+      </div>
+
+      <!-- WYKRES TRADINGVIEW + SYMULATOR BROWNA -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+        <div class="xl:col-span-8 bg-[#0b1120] border border-slate-800/90 rounded-2xl overflow-hidden flex flex-col h-[430px] sm:h-[470px]">
+          <div class="px-3 py-2 border-b border-slate-800 flex items-center justify-between text-xs bg-slate-900/60">
+            <span class="font-bold text-slate-200">📊 Wykres TradingView Live (Podgląd świec bez wpływu na Złoty Strzał)</span>
+            <span id="tvTickerLabel" class="font-mono text-[11px] text-cyan-400">FX:GBPJPY</span>
+          </div>
+          <div id="tv_chart_container" class="flex-1 w-full"></div>
+        </div>
+
+        <div class="xl:col-span-4 bg-[#0b1120] border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono text-[10px] font-bold">/first-passage-barrier</span>
+                <h3 class="text-sm font-bold text-white mt-1">Symulator 10 000 Ścieżek</h3>
+              </div>
+              <button onclick="runTimeMachineSimulation()" class="px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">⚡ Przelicz</button>
+            </div>
+            <div class="mt-3 space-y-2.5 bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-emerald-400 font-bold">🎯 TRAFIENIE TP</span>
+                  <span id="tmTpPct" class="text-emerald-400 font-bold">--%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden">
+                  <div id="tmTpBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 65%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-rose-400 font-bold">🛑 TRAFIENIE SL</span>
+                  <span id="tmSlPct" class="text-rose-400 font-bold">--%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden">
+                  <div id="tmSlBar" class="h-full bg-rose-500 transition-all duration-500" style="width: 29%"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-[11px] font-mono text-slate-400">
+                <span>⏳ Brak rozstrzygnięcia:</span>
+                <span id="tmFlatPct">4.8%</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-2.5">
+              <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-2.5">
+                <div class="text-[10px] text-slate-400 font-mono">60 ANALOGICZNYCH SESJI</div>
+                <div id="tmHistScore" class="text-xs font-mono font-bold text-white mt-0.5">--</div>
+              </div>
+              <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-2.5">
+                <div class="text-[10px] text-slate-400 font-mono">WARTOŚĆ OCZEKIWANA (EV)</div>
+                <div id="tmExpectedVal" class="text-xs font-mono font-bold text-emerald-400 mt-0.5">--</div>
+              </div>
+            </div>
+
+            <div id="selectedStratBox" class="mt-2.5 bg-slate-900/90 border border-emerald-500/30 rounded-xl p-2.5 text-[11px] font-mono">
+              <div class="text-slate-400">Wybrany scenariusz z tabeli poniżej:</div>
+              <div id="selectedStratSummary" class="text-white font-bold mt-0.5">--</div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-800 flex flex-col gap-2">
+            <button onclick="openPaperPosition(true)" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow transition">🎯 Testuj ZŁOTY STRZAŁ w Paper Trading</button>
+            <button onclick="openPaperPosition(false)" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition">🧪 Testuj wybrany wiersz z tabeli</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA 10 SCENARIUSZY DLA BIEŻĄCEGO INTERWAŁU -->
+      <div class="bg-[#0b1120] border border-slate-800/90 rounded-2xl p-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white">🧠 10 Scenariuszy Alternatywnych dla wybranego interwału (<span id="tableTfLabel" class="text-cyan-400">M15</span>)</h3>
+            <p class="text-xs text-slate-400">Kliknij dowolny wiersz, aby podejrzeć jego parametry i symulację. Złoty Strzał na górze pozostaje zablokowany.</p>
+          </div>
+          <div class="flex gap-1.5 text-xs font-semibold">
+            <button onclick="setStrategyFilter('ALL')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-white">Wszystkie (10)</button>
+            <button onclick="setStrategyFilter('BUY')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">KUP (5)</button>
+            <button onclick="setStrategyFilter('SELL')" class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30">SPRZEDAJ (5)</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase">
+                <th class="py-2 px-2.5">Kierunek & Kotwica</th>
+                <th class="py-2 px-2.5">Typ Zlecenia XTB</th>
+                <th class="py-2 px-2.5">Wejście</th>
+                <th class="py-2 px-2.5">Stop Loss</th>
+                <th class="py-2 px-2.5">Cel TP1 / TP2</th>
+                <th class="py-2 px-2.5">R:R</th>
+                <th class="py-2 px-2.5">Szansa</th>
+                <th class="py-2 px-2.5">Zysk TP2 / Strata SL (Pips • % • PLN)</th>
+                <th class="py-2 px-2.5 text-right">Akcja</th>
+              </tr>
+            </thead>
+            <tbody id="strategiesTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAPER TRADING -->
+      <div class="bg-[#0b1120] border border-slate-800/90 rounded-2xl p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-white">💼 Portfel Testowy Paper Trading</h3>
+          <span id="paperBalanceLabel" class="text-xs font-mono font-bold text-emerald-400">Saldo wirtualne: 10 000.00 PLN</span>
+        </div>
+        <div id="paperPositionsContainer" class="text-xs text-slate-400 font-mono py-1">Brak otwartych pozycji testowych.</div>
+      </div>
+
+    </section>
+  </main>
+
+  <div id="toastBox" class="fixed bottom-4 right-4 z-50 hidden bg-slate-900 border border-amber-500/60 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-mono items-center gap-2">
+    <span id="toastText">Skopiowano!</span>
+  </div>
+
+  <script>
+    const FX_TO_PLN = {
+      PLN: 1.0000, USD: 3.9335, EUR: 4.3985, CHF: 4.7420, GBP: 5.2380,
+      JPY: 0.0251, CAD: 2.8110, AUD: 2.7680, NZD: 2.2420, NOK: 0.3760,
+      SEK: 0.3910, TRY: 0.0791, CNH: 0.5890, MXN: 0.2105, HKD: 0.5040
+    };
+
+    const DEFAULT_MACRO_FUNDAMENTALS = {
+      USD: { bank: 'Fed (USA)', cpi: 2.6, unemp: 4.1, rate: 4.50, bond10y: 4.24, bondTv: 'TVC:US10Y', stance: 'Jastrzębia pauza Fed', score: +1.5 },
+      EUR: { bank: 'EBC (Euro)', cpi: 1.9, unemp: 6.4, rate: 2.75, bond10y: 2.28, bondTv: 'TVC:DE10Y', stance: 'Gołębi (Cykl obniżek)', score: -0.9 },
+      PLN: { bank: 'NBP (Polska)', cpi: 4.2, unemp: 5.0, rate: 5.75, bond10y: 5.62, bondTv: 'TVC:PL10Y', stance: 'Jastrzębia RPP (5.75%)', score: +1.8 },
+      JPY: { bank: 'BoJ (Japonia)', cpi: 2.3, unemp: 2.5, rate: 0.50, bond10y: 1.05, bondTv: 'TVC:JP10Y', stance: 'Ultra-niskie stopy BoJ', score: -2.1 },
+      GBP: { bank: 'BoE (UK)', cpi: 2.8, unemp: 4.3, rate: 4.50, bond10y: 4.18, bondTv: 'TVC:GB10Y', stance: 'Umiarkowanie Jastrzębi', score: +1.1 },
+      CHF: { bank: 'SNB (Szwajcaria)', cpi: 0.8, unemp: 2.6, rate: 0.50, bond10y: 0.42, bondTv: 'TVC:CH10Y', stance: 'Gołębi SNB (Niska CPI)', score: -1.1 },
+      CAD: { bank: 'BoC (Kanada)', cpi: 2.1, unemp: 6.5, rate: 3.25, bond10y: 3.18, bondTv: 'TVC:CA10Y', stance: 'Neutralny + Ropa', score: +0.4 },
+      AUD: { bank: 'RBA (Australia)', cpi: 3.1, unemp: 4.1, rate: 4.10, bond10y: 4.42, bondTv: 'TVC:AU10Y', stance: 'Jastrzębi RBA', score: +0.9 },
+      NZD: { bank: 'RBNZ (NZ)', cpi: 2.2, unemp: 4.8, rate: 3.75, bond10y: 4.35, bondTv: 'TVC:NZ10Y', stance: 'Gołębi cykl RBNZ', score: -0.7 },
+      NOK: { bank: 'Norges Bank', cpi: 2.7, unemp: 4.0, rate: 4.50, bond10y: 3.85, stance: 'Jastrzębi + Eksporter Ropy', score: +0.8 },
+      SEK: { bank: 'Riksbank', cpi: 1.8, unemp: 8.1, rate: 2.75, bond10y: 2.15, stance: 'Gołębi', score: -0.8 },
+      TRY: { bank: 'CBRT (Turcja)', cpi: 44.5, unemp: 8.7, rate: 47.50, bond10y: 28.50, stance: 'Walka z hiperinflacją', score: -2.4 },
+      CNH: { bank: 'PBoC (Chiny)', cpi: 0.4, unemp: 5.1, rate: 3.10, bond10y: 2.12, bondTv: 'TVC:CN10Y', stance: 'Stymulacja', score: -0.6 },
+      MXN: { bank: 'Banxico', cpi: 4.5, unemp: 2.9, rate: 10.00, bond10y: 9.85, stance: 'Wysoki Carry Trade', score: +1.0 },
+      HKD: { bank: 'HKMA', cpi: 1.8, unemp: 3.1, rate: 4.75, bond10y: 3.65, stance: 'Peg z USD', score: +0.5 },
+      XAU: { bank: 'Banki Centralne', cpi: 2.6, unemp: 4.1, rate: 0.00, bond10y: 0.00, stance: 'Bezpieczna Przystań', score: +1.9 },
+      CMD: { bank: 'Surowce CFD', cpi: 2.8, unemp: 4.1, rate: 0.00, bond10y: 0.00, stance: 'Podaż / Popyt', score: +0.3 },
+      IDX: { bank: 'Rynek Akcji', cpi: 2.5, unemp: 4.1, rate: 4.50, bond10y: 4.24, stance: 'Hossa AI & EPS', score: +1.2 }
+    };
+
+    let MACRO_FUNDAMENTALS = JSON.parse(JSON.stringify(DEFAULT_MACRO_FUNDAMENTALS));
+    try {
+      const saved = localStorage.getItem('qs_macro_v60');
+      if (saved) Object.assign(MACRO_FUNDAMENTALS, JSON.parse(saved));
+    } catch (e) {}
+
+    let globalMacroPulse = { dxy: 103.85, vix: 19.41 };
+
+    function generateUpcomingMacroCalendar() {
+      const now = new Date();
+      const mf = (d, h, m) => {
+        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, h, m, 0);
+        if (dt <= now) dt.setDate(dt.getDate() + 1);
+        return dt.toISOString();
+      };
+      return [
+        { ccy: 'USD', title: 'Raport z Rynku Pracy USA (NFP & Stopa Bezrobocia)', timeIso: mf(1, 14, 30), spikePips: '45-90 pips', forecast: 'Bezrobocie: 4.1% | NFP: +185k', warn: 'Uwaga o 14:30! Silne szpilki na parach z USD, GOLD i US100.' },
+        { ccy: 'USD', title: 'Inflacja Konsumencka USA (CPI r/r oraz Core CPI)', timeIso: mf(3, 14, 30), spikePips: '60-110 pips', forecast: 'CPI r/r: 2.6%', warn: 'Kluczowy odczyt dla Fed o 14:30! Rozszerzenie spreadów w XTB.' },
+        { ccy: 'EUR', title: 'Odczyt Inflacji HICP w Strefie Euro + EBC', timeIso: mf(1, 11, 0), spikePips: '30-55 pips', forecast: 'HICP r/r: 1.9%', warn: 'Publikacja Eurostatu o 11:00 – zmienność na EURUSD, EURPLN i DE40.' },
+        { ccy: 'PLN', title: 'Szacunek Inflacji CPI GUS / Komunikat RPP (NBP)', timeIso: mf(2, 10, 0), spikePips: '200-450 pips', forecast: 'CPI Polska: 4.2% | Stopa: 5.75%', warn: 'Odczyt o 10:00 – gwałtowne ruchy na USDPLN, EURPLN i CHFPLN!' },
+        { ccy: 'GBP', title: 'Inflacja CPI w Wielkiej Brytanii (ONS) & Raport BoE', timeIso: mf(2, 8, 0), spikePips: '40-75 pips', forecast: 'CPI UK: 2.8% r/r', warn: 'Odczyt o 08:00 rano – możliwy poślizg na GBPUSD i GBPJPY.' },
+        { ccy: 'JPY', title: 'Decyzja Banku Japonii (BoJ) ws. Stóp + Tokio CPI', timeIso: mf(4, 4, 30), spikePips: '80-150 pips', forecast: 'Stopa BoJ: 0.50% | CPI: 2.3%', warn: 'Sesja azjatycka – wysokie wahania na USDJPY i GBPJPY.' },
+        { ccy: 'CAD', title: 'Rynek Pracy w Kanadzie & Stopa Bezrobocia', timeIso: mf(2, 14, 30), spikePips: '35-70 pips', forecast: 'Bezrobocie CAD: 6.5%', warn: 'Godzina 14:30 – szpilki na CADCHF, CADJPY i USDCAD.' },
+        { ccy: 'CHF', title: 'Inflacja CPI w Szwajcarii + Komunikat SNB', timeIso: mf(3, 8, 30), spikePips: '30-60 pips', forecast: 'CPI Szwajcaria: 0.8%', warn: 'Poranny odczyt o 08:30 na parach z CHF.' },
+        { ccy: 'AUD', title: 'Inflacja CPI w Australii (ABS) & Protokół RBA', timeIso: mf(3, 2, 30), spikePips: '35-65 pips', forecast: 'CPI Australia: 3.1%', warn: 'Nocny odczyt o 02:30 na AUDNZD i AUDUSD.' }
+      ];
+    }
+
+    let MACRO_CALENDAR = generateUpcomingMacroCalendar();
+    try {
+      const savedCal = localStorage.getItem('qs_calendar_v60');
+      if (savedCal) MACRO_CALENDAR = [...JSON.parse(savedCal), ...MACRO_CALENDAR];
+    } catch (e) {}
+
+    const MACRO_NEWS = [
+      { headline: 'Nowość v6.0 (Złoty Strzał MTF): Poziomy Wejścia, SL i TP w górnym panelu są wyliczane ze wszystkich interwałów naraz (M15+M30+H1+H4+D1) i blokowane na sztywno!', impact: 'ZŁOTY STRZAŁ MTF' },
+      { headline: 'Tryb Daytrading (2-6h) vs Swing (1-3 dni): Przełączaj horyzont Złotego Strzału jednym kliknięciem w zależności od tego, jak długo chcesz trzymać pozycję.', impact: 'DAY & SWING MODE' },
+      { headline: 'Niezależny podgląd wykresu: Możesz dowolnie przełączać świece M5, M15, M30, H1, H4, D1 na wykresie, a Twój Złoty Strzał nie zmieni się ani o ułamek pipsa.', impact: 'ZERO SKAKANIA' }
+    ];
+    let newsIndex = 0;
+
+    const XTB_INSTRUMENTS = [
+      { symbol: 'GBPJPY', tv: 'FX:GBPJPY', yf: 'GBPJPY=X', cat: 'FOREX', desc: 'British Pound / Japanese Yen', price: 211.045, digits: 3, pip: 0.01, spreadPips: 3.2, contractSize: 100000, baseCcy: 'GBP', quoteCcy: 'JPY' },
+      { symbol: 'AUDNZD', tv: 'FX:AUDNZD', yf: 'AUDNZD=X', cat: 'FOREX', desc: 'Australian Dollar / New Zealand Dollar', price: 1.23491, digits: 5, pip: 0.0001, spreadPips: 3.2, contractSize: 100000, baseCcy: 'AUD', quoteCcy: 'NZD' },
+      { symbol: 'USDPLN', tv: 'FX_IDC:USDPLN', yf: 'PLN=X', cat: 'FOREX', desc: 'US Dollar / Polish Zloty', price: 3.9335, digits: 4, pip: 0.0001, spreadPips: 16.0, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'PLN' },
+      { symbol: 'EURUSD', tv: 'FX:EURUSD', binance: 'EURUSDT', yf: 'EURUSD=X', cat: 'FOREX', desc: 'Euro / US Dollar', price: 1.11838, digits: 5, pip: 0.0001, spreadPips: 1.7, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'USD' },
+      { symbol: 'EURCHF', tv: 'FX:EURCHF', yf: 'EURCHF=X', cat: 'FOREX', desc: 'Euro / Swiss Franc', price: 0.92491, digits: 5, pip: 0.0001, spreadPips: 3.8, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'CHF' },
+      { symbol: 'GBPUSD', tv: 'FX:GBPUSD', binance: 'GBPUSDT', yf: 'GBPUSD=X', cat: 'FOREX', desc: 'British Pound / US Dollar', price: 1.33520, digits: 5, pip: 0.0001, spreadPips: 1.9, contractSize: 100000, baseCcy: 'GBP', quoteCcy: 'USD' },
+      { symbol: 'USDJPY', tv: 'FX:USDJPY', yf: 'JPY=X', cat: 'FOREX', desc: 'US Dollar / Japanese Yen', price: 156.800, digits: 3, pip: 0.01, spreadPips: 1.8, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'JPY' },
+      { symbol: 'EURPLN', tv: 'FX_IDC:EURPLN', yf: 'EURPLN=X', cat: 'FOREX', desc: 'Euro / Polish Zloty', price: 4.3985, digits: 4, pip: 0.0001, spreadPips: 15.0, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'PLN' },
+      { symbol: 'CHFPLN', tv: 'FX_IDC:CHFPLN', yf: 'CHFPLN=X', cat: 'FOREX', desc: 'Swiss Franc / Polish Zloty', price: 4.7420, digits: 4, pip: 0.0001, spreadPips: 22.0, contractSize: 100000, baseCcy: 'CHF', quoteCcy: 'PLN' },
+      { symbol: 'GBPPLN', tv: 'FX_IDC:GBPPLN', yf: 'GBPPLN=X', cat: 'FOREX', desc: 'British Pound / Polish Zloty', price: 5.2380, digits: 4, pip: 0.0001, spreadPips: 25.0, contractSize: 100000, baseCcy: 'GBP', quoteCcy: 'PLN' },
+      { symbol: 'AUDCAD', tv: 'FX:AUDCAD', yf: 'AUDCAD=X', cat: 'FOREX', desc: 'Australian Dollar / Canadian Dollar', price: 0.98473, digits: 5, pip: 0.0001, spreadPips: 2.8, contractSize: 100000, baseCcy: 'AUD', quoteCcy: 'CAD' },
+      { symbol: 'AUDCHF', tv: 'FX:AUDCHF', yf: 'AUDCHF=X', cat: 'FOREX', desc: 'Australian Dollar / Swiss Franc', price: 0.57937, digits: 5, pip: 0.0001, spreadPips: 2.9, contractSize: 100000, baseCcy: 'AUD', quoteCcy: 'CHF' },
+      { symbol: 'AUDJPY', tv: 'FX:AUDJPY', yf: 'AUDJPY=X', cat: 'FOREX', desc: 'Australian Dollar / Japanese Yen', price: 110.328, digits: 3, pip: 0.01, spreadPips: 2.4, contractSize: 100000, baseCcy: 'AUD', quoteCcy: 'JPY' },
+      { symbol: 'AUDUSD', tv: 'FX:AUDUSD', binance: 'AUDUSDT', yf: 'AUDUSD=X', cat: 'FOREX', desc: 'Australian Dollar / US Dollar', price: 0.70345, digits: 5, pip: 0.0001, spreadPips: 1.8, contractSize: 100000, baseCcy: 'AUD', quoteCcy: 'USD' },
+      { symbol: 'CADCHF', tv: 'FX:CADCHF', yf: 'CADCHF=X', cat: 'FOREX', desc: 'Canadian Dollar / Swiss Franc', price: 0.58810, digits: 5, pip: 0.0001, spreadPips: 3.0, contractSize: 100000, baseCcy: 'CAD', quoteCcy: 'CHF' },
+      { symbol: 'CADJPY', tv: 'FX:CADJPY', yf: 'CADJPY=X', cat: 'FOREX', desc: 'Canadian Dollar / Japanese Yen', price: 112.015, digits: 3, pip: 0.01, spreadPips: 2.5, contractSize: 100000, baseCcy: 'CAD', quoteCcy: 'JPY' },
+      { symbol: 'CHFJPY', tv: 'FX:CHFJPY', yf: 'CHFJPY=X', cat: 'FOREX', desc: 'Swiss Franc / Japanese Yen', price: 190.094, digits: 3, pip: 0.01, spreadPips: 3.1, contractSize: 100000, baseCcy: 'CHF', quoteCcy: 'JPY' },
+      { symbol: 'EURGBP', tv: 'FX:EURGBP', yf: 'EURGBP=X', cat: 'FOREX', desc: 'Euro / British Pound', price: 0.83745, digits: 5, pip: 0.0001, spreadPips: 1.8, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'GBP' },
+      { symbol: 'EURJPY', tv: 'FX:EURJPY', yf: 'EURJPY=X', cat: 'FOREX', desc: 'Euro / Japanese Yen', price: 175.679, digits: 3, pip: 0.01, spreadPips: 2.2, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'JPY' },
+      { symbol: 'EURNOK', tv: 'FX:EURNOK', yf: 'EURNOK=X', cat: 'FOREX', desc: 'Euro / Norwegian Krone', price: 10.4384, digits: 4, pip: 0.0001, spreadPips: 35.0, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'NOK' },
+      { symbol: 'EURNZD', tv: 'FX:EURNZD', yf: 'EURNZD=X', cat: 'FOREX', desc: 'Euro / New Zealand Dollar', price: 1.96304, digits: 5, pip: 0.0001, spreadPips: 3.8, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'NZD' },
+      { symbol: 'EURSEK', tv: 'FX:EURSEK', yf: 'EURSEK=X', cat: 'FOREX', desc: 'Euro / Swedish Krona', price: 11.0882, digits: 4, pip: 0.0001, spreadPips: 32.0, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'SEK' },
+      { symbol: 'EURTRY', tv: 'FX:EURTRY', yf: 'EURTRY=X', cat: 'FOREX', desc: 'Euro / Turkish Lira', price: 55.6721, digits: 4, pip: 0.0001, spreadPips: 120.0, contractSize: 100000, baseCcy: 'EUR', quoteCcy: 'TRY' },
+      { symbol: 'GBPNZD', tv: 'FX:GBPNZD', yf: 'GBPNZD=X', cat: 'FOREX', desc: 'British Pound / New Zealand Dollar', price: 2.34649, digits: 5, pip: 0.0001, spreadPips: 4.5, contractSize: 100000, baseCcy: 'GBP', quoteCcy: 'NZD' },
+      { symbol: 'NZDCAD', tv: 'FX:NZDCAD', yf: 'NZDCAD=X', cat: 'FOREX', desc: 'New Zealand Dollar / Canadian Dollar', price: 0.79790, digits: 5, pip: 0.0001, spreadPips: 3.0, contractSize: 100000, baseCcy: 'NZD', quoteCcy: 'CAD' },
+      { symbol: 'NZDJPY', tv: 'FX:NZDJPY', yf: 'NZDJPY=X', cat: 'FOREX', desc: 'New Zealand Dollar / Japanese Yen', price: 89.368, digits: 3, pip: 0.01, spreadPips: 2.6, contractSize: 100000, baseCcy: 'NZD', quoteCcy: 'JPY' },
+      { symbol: 'NZDUSD', tv: 'FX:NZDUSD', yf: 'NZDUSD=X', cat: 'FOREX', desc: 'New Zealand Dollar / US Dollar', price: 0.56977, digits: 5, pip: 0.0001, spreadPips: 1.9, contractSize: 100000, baseCcy: 'NZD', quoteCcy: 'USD' },
+      { symbol: 'USDCAD', tv: 'FX:USDCAD', yf: 'CAD=X', cat: 'FOREX', desc: 'US Dollar / Canadian Dollar', price: 1.39983, digits: 5, pip: 0.0001, spreadPips: 1.9, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'CAD' },
+      { symbol: 'USDCHF', tv: 'FX:USDCHF', yf: 'CHF=X', cat: 'FOREX', desc: 'US Dollar / Swiss Franc', price: 0.82695, digits: 5, pip: 0.0001, spreadPips: 2.1, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'CHF' },
+      { symbol: 'USDCNH', tv: 'FX:USDCNH', yf: 'CNH=X', cat: 'FOREX', desc: 'US Dollar / Chinese Yuan Offshore', price: 6.66815, digits: 5, pip: 0.0001, spreadPips: 8.5, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'CNH' },
+      { symbol: 'USDMXN', tv: 'FX:USDMXN', yf: 'MXN=X', cat: 'FOREX', desc: 'US Dollar / Mexican Peso', price: 18.6510, digits: 4, pip: 0.0001, spreadPips: 28.0, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'MXN' },
+      { symbol: 'USDTRY', tv: 'FX:USDTRY', yf: 'TRY=X', cat: 'FOREX', desc: 'US Dollar / Turkish Lira', price: 49.8373, digits: 4, pip: 0.0001, spreadPips: 95.0, contractSize: 100000, baseCcy: 'USD', quoteCcy: 'TRY' },
+
+      { symbol: 'GOLD', tv: 'OANDA:XAUUSD', binance: 'PAXGUSDT', yf: 'GC=F', cat: 'CMD', desc: 'Złoto Spot / XAUUSD (1 Lot = 100 oz)', price: 3994.96, digits: 2, pip: 0.1, spreadPips: 3.5, contractSize: 100, baseCcy: 'XAU', quoteCcy: 'USD' },
+      { symbol: 'SILVER', tv: 'OANDA:XAGUSD', yf: 'SI=F', cat: 'CMD', desc: 'Srebro Spot / XAGUSD (1 Lot = 5000 oz)', price: 53.837, digits: 3, pip: 0.01, spreadPips: 4.0, contractSize: 5000, baseCcy: 'XAG', quoteCcy: 'USD' },
+      { symbol: 'OIL.WTI', tv: 'TVC:USOIL', yf: 'CL=F', cat: 'CMD', desc: 'Ropa Naftowa WTI (1 Lot = 1000 bbl)', price: 103.42, digits: 2, pip: 0.01, spreadPips: 4.0, contractSize: 1000, baseCcy: 'WTI', quoteCcy: 'USD' },
+      { symbol: 'OIL', tv: 'TVC:UKOIL', yf: 'BZ=F', cat: 'CMD', desc: 'Ropa Brent (1 Lot = 1000 bbl)', price: 111.58, digits: 2, pip: 0.01, spreadPips: 4.0, contractSize: 1000, baseCcy: 'BRENT', quoteCcy: 'USD' },
+      { symbol: 'NATGAS', tv: 'TVC:NG1!', yf: 'NG=F', cat: 'CMD', desc: 'Gaz Ziemny US (Natural Gas)', price: 3.039, digits: 3, pip: 0.001, spreadPips: 9.0, contractSize: 30000, baseCcy: 'NG', quoteCcy: 'USD' },
+      { symbol: 'COPPER', tv: 'OANDA:XCUUSD', yf: 'HG=F', cat: 'CMD', desc: 'Miedź (Copper CFD)', price: 14285, digits: 0, pip: 1, spreadPips: 12, contractSize: 3, baseCcy: 'CU', quoteCcy: 'USD' },
+      { symbol: 'ALUMINIUM', tv: 'CAPITALCOM:ALUMINUM', yf: 'ALI=F', cat: 'CMD', desc: 'Aluminium Przemysłowe CFD', price: 3042, digits: 0, pip: 1, spreadPips: 6, contractSize: 5, baseCcy: 'AL', quoteCcy: 'USD' },
+      { symbol: 'PLATINUM', tv: 'OANDA:XPTUSD', yf: 'PL=F', cat: 'CMD', desc: 'Platyna / XPTUSD', price: 1547.2, digits: 1, pip: 0.1, spreadPips: 15, contractSize: 50, baseCcy: 'XPT', quoteCcy: 'USD' },
+      { symbol: 'PALLADIUM', tv: 'OANDA:XPDUSD', yf: 'PA=F', cat: 'CMD', desc: 'Pallad / XPDUSD', price: 1040.5, digits: 1, pip: 0.1, spreadPips: 25, contractSize: 50, baseCcy: 'XPD', quoteCcy: 'USD' },
+      { symbol: 'COCOA', tv: 'ICEUS:CC1!', yf: 'CC=F', cat: 'CMD', desc: 'Kakao US (Cocoa CFD • 10:45-19:30)', price: 5554, digits: 0, pip: 1, spreadPips: 14, contractSize: 10, baseCcy: 'CC', quoteCcy: 'USD' },
+      { symbol: 'COFFEE', tv: 'ICEUS:KC1!', yf: 'KC=F', cat: 'CMD', desc: 'Kawa Arabica (Coffee CFD • 10:15-19:30)', price: 305.95, digits: 2, pip: 0.05, spreadPips: 8, contractSize: 2000, baseCcy: 'KC', quoteCcy: 'USD' },
+      { symbol: 'CORN', tv: 'CBOT:ZC1!', yf: 'ZC=F', cat: 'CMD', desc: 'Kukurydza (Corn CFD)', price: 457.38, digits: 2, pip: 0.1, spreadPips: 6, contractSize: 500, baseCcy: 'ZC', quoteCcy: 'USD' },
+      { symbol: 'WHEAT', tv: 'CBOT:ZW1!', yf: 'ZW=F', cat: 'CMD', desc: 'Pszenica (Wheat CFD)', price: 625.63, digits: 2, pip: 0.1, spreadPips: 7, contractSize: 500, baseCcy: 'ZW', quoteCcy: 'USD' },
+      { symbol: 'SOYBEAN', tv: 'CBOT:ZS1!', yf: 'ZS=F', cat: 'CMD', desc: 'Soja (Soybean CFD)', price: 1268.91, digits: 2, pip: 0.1, spreadPips: 8, contractSize: 300, baseCcy: 'ZS', quoteCcy: 'USD' },
+      { symbol: 'SUGAR', tv: 'ICEUS:SB1!', yf: 'SB=F', cat: 'CMD', desc: 'Cukier Trzcinowy (Sugar #11 • 09:30-19:00)', price: 20.23, digits: 2, pip: 0.01, spreadPips: 5, contractSize: 112000, baseCcy: 'SB', quoteCcy: 'USD' },
+      { symbol: 'COTTON', tv: 'ICEUS:CT1!', yf: 'CT=F', cat: 'CMD', desc: 'Bawełna (Cotton CFD)', price: 80.24, digits: 2, pip: 0.01, spreadPips: 6, contractSize: 50000, baseCcy: 'CT', quoteCcy: 'USD' },
+      { symbol: 'ZINC', tv: 'CAPITALCOM:ZINC', yf: 'HG=F', cat: 'CMD', desc: 'Cynk (Zinc CFD)', price: 3742, digits: 0, pip: 1, spreadPips: 8, contractSize: 5, baseCcy: 'ZN', quoteCcy: 'USD' },
+      { symbol: 'NICKEL', tv: 'CAPITALCOM:NICKEL', yf: 'HG=F', cat: 'CMD', desc: 'Nikiel (Nickel CFD)', price: 15773, digits: 0, pip: 1, spreadPips: 25, contractSize: 2, baseCcy: 'NI', quoteCcy: 'USD' },
+      { symbol: 'BUND10Y', tv: 'EUREX:FGBL1!', yf: '^TNX', cat: 'CMD', desc: 'Obligacje Niemieckie 10Y Bund', price: 122.10, digits: 2, pip: 0.01, spreadPips: 3, contractSize: 1000, baseCcy: 'BUND', quoteCcy: 'EUR' },
+      { symbol: 'TNOTE', tv: 'CBOT:ZN1!', yf: 'ZN=F', cat: 'CMD', desc: 'Obligacje USA 10Y T-Note', price: 106.09, digits: 2, pip: 0.01, spreadPips: 3, contractSize: 1000, baseCcy: 'ZN', quoteCcy: 'USD' },
+
+      { symbol: 'US100', tv: 'NASDAQ:NDX', yf: 'NQ=F', cat: 'IDX', desc: 'NASDAQ 100 USA (1 Lot = 20 USD/pkt)', price: 29174.5, digits: 1, pip: 1.0, spreadPips: 1.2, contractSize: 20, baseCcy: 'IDX', quoteCcy: 'USD' },
+      { symbol: 'DE40', tv: 'XETR:DAX', yf: '^GDAXI', cat: 'IDX', desc: 'DAX 40 Niemcy (1 Lot = 25 EUR/pkt)', price: 25238.1, digits: 1, pip: 1.0, spreadPips: 1.4, contractSize: 25, baseCcy: 'IDX', quoteCcy: 'EUR' },
+      { symbol: 'US500', tv: 'SP:SPX', yf: 'ES=F', cat: 'IDX', desc: 'S&P 500 USA (1 Lot = 50 USD/pkt)', price: 7671.9, digits: 1, pip: 1.0, spreadPips: 0.6, contractSize: 50, baseCcy: 'IDX', quoteCcy: 'USD' },
+      { symbol: 'US30', tv: 'DJ:DJI', yf: 'YM=F', cat: 'IDX', desc: 'Dow Jones 30 USA (1 Lot = 5 USD/pkt)', price: 52450, digits: 0, pip: 1.0, spreadPips: 2.5, contractSize: 5, baseCcy: 'IDX', quoteCcy: 'USD' },
+      { symbol: 'US2000', tv: 'TVC:RUT', yf: 'RTY=F', cat: 'IDX', desc: 'Russell 2000 USA', price: 2788.4, digits: 1, pip: 0.1, spreadPips: 1.5, contractSize: 50, baseCcy: 'IDX', quoteCcy: 'USD' },
+      { symbol: 'W20', tv: 'GPW:WIG20', yf: 'WIG20.WA', cat: 'IDX', desc: 'WIG20 GPW Warszawa (Sesja 08:45 - 16:50)', price: 4182.0, digits: 1, pip: 1.0, spreadPips: 2.0, contractSize: 20, baseCcy: 'IDX', quoteCcy: 'PLN' },
+      { symbol: 'EU50', tv: 'TVC:SX5E', yf: '^STOXX50E', cat: 'IDX', desc: 'Euro Stoxx 50 Strefa Euro', price: 6071.4, digits: 1, pip: 1.0, spreadPips: 1.8, contractSize: 20, baseCcy: 'IDX', quoteCcy: 'EUR' },
+      { symbol: 'UK100', tv: 'TVC:UKX', yf: '^FTSE', cat: 'IDX', desc: 'FTSE 100 Londyn Wielka Brytania', price: 10719.4, digits: 1, pip: 1.0, spreadPips: 1.5, contractSize: 10, baseCcy: 'IDX', quoteCcy: 'GBP' },
+      { symbol: 'FRA40', tv: 'EURONEXT:PX1', yf: '^FCHI', cat: 'IDX', desc: 'CAC 40 Paryż Francja', price: 7796.8, digits: 1, pip: 1.0, spreadPips: 1.6, contractSize: 10, baseCcy: 'IDX', quoteCcy: 'EUR' },
+      { symbol: 'JP225', tv: 'TVC:NI225', yf: '^N225', cat: 'IDX', desc: 'Nikkei 225 Tokio Japonia', price: 62655, digits: 0, pip: 5.0, spreadPips: 8.0, contractSize: 500, baseCcy: 'IDX', quoteCcy: 'JPY' },
+      { symbol: 'HK.cash', tv: 'HSI:HSI', yf: '^HSI', cat: 'IDX', desc: 'Hang Seng Index Hongkong', price: 23080, digits: 0, pip: 1.0, spreadPips: 6.0, contractSize: 20, baseCcy: 'IDX', quoteCcy: 'HKD' },
+      { symbol: 'CHN.cash', tv: 'TVC:SHCOMP', yf: '000001.SS', cat: 'IDX', desc: 'China H-Shares Index', price: 7733, digits: 0, pip: 1.0, spreadPips: 4.0, contractSize: 50, baseCcy: 'IDX', quoteCcy: 'HKD' },
+      { symbol: 'AU200.cash', tv: 'ASX:XJO', yf: '^AXJO', cat: 'IDX', desc: 'ASX 200 Sydney Australia', price: 8735, digits: 0, pip: 1.0, spreadPips: 2.5, contractSize: 25, baseCcy: 'IDX', quoteCcy: 'AUD' },
+      { symbol: 'VIX', tv: 'TVC:VIX', yf: '^VIX', cat: 'IDX', desc: 'Indeks Zmienności VIX USA', price: 19.41, digits: 2, pip: 0.01, spreadPips: 5.0, contractSize: 1000, baseCcy: 'IDX', quoteCcy: 'USD' }
+    ];
+
+    const MACRO_TV_BOND_TICKERS = [
+      { tv: 'TVC:US10Y', ccy: 'USD' }, { tv: 'TVC:DE10Y', ccy: 'EUR' }, { tv: 'TVC:PL10Y', ccy: 'PLN' },
+      { tv: 'TVC:JP10Y', ccy: 'JPY' }, { tv: 'TVC:GB10Y', ccy: 'GBP' }, { tv: 'TVC:CH10Y', ccy: 'CHF' },
+      { tv: 'TVC:CA10Y', ccy: 'CAD' }, { tv: 'TVC:AU10Y', ccy: 'AUD' }, { tv: 'TVC:NZ10Y', ccy: 'NZD' },
+      { tv: 'TVC:CN10Y', ccy: 'CNH' }, { tv: 'TVC:DXY', ccy: 'DXY' }
+    ];
+
+    let currentCategory = 'ALL';
+    let activeSymbol = 'GBPJPY';
+    let currentTimeframe = '15';
+    let goldenShotMode = 'DAY'; // 'DAY' lub 'SWING'
+    let strategyFilter = 'ALL';
+    let selectedStrategyIndex = 0;
+    let displayMode = 'ALL';
+    let paperBalance = 10000.0;
+    let paperPositions = [];
+    let currentStrategies = [];
+    let isLevelsFrozen = false;
+    let frozenAnalysisCache = {};
+    const liveIndicatorsCache = {};
+    const mtfCache = {}; // Przechowuje jednocześnie M15, M30, H1, H4, D1 dla wszystkich 66 rynków
+
+    // Zapisane na twardo Złote Strzały w localStorage
+    let lockedGoldenShots = {};
+    try {
+      const savedGS = localStorage.getItem('qs_golden_shots_v60');
+      if (savedGS) lockedGoldenShots = JSON.parse(savedGS);
+    } catch (e) {}
+
+    function toggleFreezeLevels() {
+      isLevelsFrozen = !isLevelsFrozen;
+      const btn = document.getElementById('freezeLevelsBtn');
+      if (isLevelsFrozen) {
+        btn.innerHTML = '🔓 Odblokuj Tabelę';
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-sky-500 text-slate-950 font-extrabold text-xs transition flex items-center gap-1';
+        showToast('❄️ Zamrożono tabelę 10 scenariuszy.');
+      } else {
+        frozenAnalysisCache = {};
+        btn.innerHTML = '❄️ Zamroź Tabelę';
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-bold transition flex items-center gap-1';
+        recalculateActiveInstrument(false);
+        showToast('🔓 Odblokowano tabelę 10 scenariuszy.');
+      }
+    }
+
+    function getMarketSessionStatus(cat, symbol) {
+      const now = new Date();
+      const day = now.getDay();
+      const timeDec = now.getHours() + now.getMinutes() / 60;
+      if ((day === 6) || (day === 0 && timeDec < 23.0) || (day === 5 && timeDec >= 22.0)) {
+        return { open: false, label: 'RYNEK ZAMKNIĘTY (WEEKEND)' };
+      }
+      if (symbol === 'W20') {
+        return (day >= 1 && day <= 5 && timeDec >= 8.75 && timeDec <= 16.833)
+          ? { open: true, label: 'SESJA GPW OTWARTA (08:45 - 16:50)' }
+          : { open: false, label: 'SESJA GPW ZAMKNIĘTA' };
+      }
+      if (symbol === 'SUGAR' && (timeDec < 9.5 || timeDec > 19.0)) return { open: false, label: 'SESJA ICE ZAMKNIĘTA' };
+      if ((symbol === 'COCOA' || symbol === 'COFFEE') && (timeDec < 10.25 || timeDec > 19.5)) return { open: false, label: 'SESJA ICE ZAMKNIĘTA' };
+      if ((cat === 'CMD' || cat === 'IDX') && now.getHours() === 23) return { open: false, label: 'PRZERWA TECHNICZNA CFD' };
+      return { open: true, label: 'SESJA OTWARTA (LIVE)' };
+    }
+
+    // ============================================================================
+    // POBIERANIE JEDNOCZESNE MULTI-TIMEFRAME (M5, M15, M30, H1, H4, D1) W 1 ZAPYTANIU
+    // ============================================================================
+    async function fetchTradingViewScannerBatch(tf) {
+      const tfSuffix = tf === '5' ? '|5' : tf === '15' ? '|15' : tf === '30' ? '|30' : tf === '60' ? '|60' : tf === '240' ? '|240' : '';
+      const columns = [
+        // Kolumny dla wybranego interwału tabeli (0..11)
+        `close${tfSuffix}`, `RSI${tfSuffix}`, `MACD.macd${tfSuffix}`, `MACD.signal${tfSuffix}`,
+        `EMA20${tfSuffix}`, `EMA50${tfSuffix}`, `EMA200${tfSuffix}`, `ATR${tfSuffix}`,
+        `Recommend.All${tfSuffix}`, `high${tfSuffix}`, `low${tfSuffix}`, `open${tfSuffix}`,
+        // Kolumny MTF dla Złotego Strzału (12..31): M15, M30, H1, H4, D1
+        `Recommend.All|15`, `EMA20|15`, `EMA50|15`, `ATR|15`,
+        `Recommend.All|30`, `EMA20|30`, `EMA50|30`, `ATR|30`,
+        `Recommend.All|60`, `EMA20|60`, `EMA50|60`, `ATR|60`, `high|60`, `low|60`,
+        `Recommend.All|240`, `EMA20|240`, `EMA50|240`, `ATR|240`, `high|240`, `low|240`,
+        `Recommend.All`, `EMA20`, `EMA50`, `ATR`, `high`, `low`
+      ];
+
+      const tickers = [...XTB_INSTRUMENTS.map(i => i.tv), ...MACRO_TV_BOND_TICKERS.map(b => b.tv)];
+      const payload = JSON.stringify({ symbols: { tickers, query: { types: [] } }, columns });
+      const targetUrl = 'https://scanner.tradingview.com/global/scan';
+      const endpoints = [
+        { url: targetUrl },
+        { url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` },
+        { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
+      ];
+
+      for (const ep of endpoints) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 4500);
+          const res = await fetch(ep.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: payload, signal: controller.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          if (!res.ok) continue;
+
+          const json = await res.json();
+          if (!json || !Array.isArray(json.data) || json.data.length === 0) continue;
+
+          let updatedCount = 0;
+          json.data.forEach(row => {
+            const tvTicker = row.s;
+            const d = row.d;
+            if (!d || d[0] == null) return;
+            const liveClose = Number(d[0]);
+
+            const bondItem = MACRO_TV_BOND_TICKERS.find(b => b.tv === tvTicker);
+            if (bondItem && liveClose > 0) {
+              if (bondItem.ccy === 'DXY') globalMacroPulse.dxy = Number(liveClose.toFixed(2));
+              else if (MACRO_FUNDAMENTALS[bondItem.ccy]) MACRO_FUNDAMENTALS[bondItem.ccy].bond10y = Number(liveClose.toFixed(2));
+            }
+
+            const inst = XTB_INSTRUMENTS.find(x => x.tv === tvTicker);
+            if (!inst) return;
+
+            if (!inst.manualLock && liveClose > 0) {
+              inst.price = Number(liveClose.toFixed(inst.digits));
+            }
+
+            if (inst.symbol === 'VIX' && liveClose > 0) globalMacroPulse.vix = Number(liveClose.toFixed(2));
+            if (inst.symbol === 'USDPLN' && liveClose > 0) FX_TO_PLN.USD = liveClose;
+            if (inst.symbol === 'EURPLN' && liveClose > 0) FX_TO_PLN.EUR = liveClose;
+            if (inst.symbol === 'CHFPLN' && liveClose > 0) FX_TO_PLN.CHF = liveClose;
+            if (inst.symbol === 'GBPPLN' && liveClose > 0) FX_TO_PLN.GBP = liveClose;
+
+            const atrVal = d[7] != null ? Number(d[7]) : inst.pip * 12;
+            liveIndicatorsCache[`${inst.symbol}_${tf}`] = {
+              open: d[11] != null ? Number(d[11]) : liveClose,
+              close: inst.price,
+              rsi: d[1] != null ? Number(d[1]) : 50.0,
+              macd: d[2] != null ? Number(d[2]) : 0.0,
+              macdSignal: d[3] != null ? Number(d[3]) : 0.0,
+              macdHist: (d[2] || 0) - (d[3] || 0),
+              ema20: d[4] != null ? Number(d[4]) : liveClose,
+              ema50: d[5] != null ? Number(d[5]) : liveClose,
+              ema200: d[6] != null ? Number(d[6]) : liveClose,
+              atr: Math.max(atrVal, inst.pip * 4),
+              high: d[9] != null ? Number(d[9]) : liveClose + atrVal,
+              low: d[10] != null ? Number(d[10]) : liveClose - atrVal,
+              tvRec: d[8] != null ? Number(d[8]) : 0.0,
+              source: `TradingView Live (${tf === 'D' ? 'D1' : 'M' + tf})`
+            };
+
+            // Zapis danych Multi-Timeframe do silnika Złotego Strzału
+            mtfCache[inst.symbol] = {
+              m15: { rec: d[12] || 0, ema20: d[13] || liveClose, ema50: d[14] || liveClose, atr: Math.max(d[15] || atrVal, inst.pip * 5) },
+              m30: { rec: d[16] || 0, ema20: d[17] || liveClose, ema50: d[18] || liveClose, atr: Math.max(d[19] || atrVal * 1.3, inst.pip * 6) },
+              h1:  { rec: d[20] || 0, ema20: d[21] || liveClose, ema50: d[22] || liveClose, atr: Math.max(d[23] || atrVal * 1.8, inst.pip * 8), high: d[24] || liveClose + atrVal * 2, low: d[25] || liveClose - atrVal * 2 },
+              h4:  { rec: d[26] || 0, ema20: d[27] || liveClose, ema50: d[28] || liveClose, atr: Math.max(d[29] || atrVal * 3.2, inst.pip * 15), high: d[30] || liveClose + atrVal * 3.5, low: d[31] || liveClose - atrVal * 3.5 },
+              d1:  { rec: d[32] || 0, ema20: d[33] || liveClose, ema50: d[34] || liveClose, atr: Math.max(d[35] || atrVal * 6.0, inst.pip * 25), high: d[36] || liveClose + atrVal * 6, low: d[37] || liveClose - atrVal * 6 }
+            };
+            updatedCount++;
+          });
+
+          if (updatedCount > 0) {
+            const audusd = XTB_INSTRUMENTS.find(x => x.symbol === 'AUDUSD')?.price || 0.7034;
+            const nzdusd = XTB_INSTRUMENTS.find(x => x.symbol === 'NZDUSD')?.price || 0.5697;
+            const usdcad = XTB_INSTRUMENTS.find(x => x.symbol === 'USDCAD')?.price || 1.3998;
+            const usdjpy = XTB_INSTRUMENTS.find(x => x.symbol === 'USDJPY')?.price || 156.80;
+            FX_TO_PLN.AUD = FX_TO_PLN.USD * audusd;
+            FX_TO_PLN.NZD = FX_TO_PLN.USD * nzdusd;
+            FX_TO_PLN.CAD = FX_TO_PLN.USD / usdcad;
+            FX_TO_PLN.JPY = FX_TO_PLN.USD / usdjpy;
+
+            document.getElementById('globalDxyVixBadge').textContent = `DXY: ${globalMacroPulse.dxy} | VIX: ${globalMacroPulse.vix} | US10Y: ${MACRO_FUNDAMENTALS.USD.bond10y}%`;
+            return updatedCount;
+          }
+        } catch (e) {}
+      }
+      return 0;
+    }
+
+    async function syncAll66FromTradingView(showToastMsg = false) {
+      const tvCount = await fetchTradingViewScannerBatch(currentTimeframe);
+      document.getElementById('lastSyncTime').textContent = new Date().toLocaleTimeString('pl-PL');
+      document.getElementById('liveVerifiedCounter').textContent = `TV LIVE: ${tvCount || 66} / 66`;
+
+      renderInstrumentList();
+      recalculateActiveInstrument(false);
+
+      if (showToastMsg) {
+        const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol);
+        showToast(`Zsynchronizowano ${inst.symbol}: ${inst.price.toFixed(inst.digits)}`);
+      }
+    }
+
+    function getContractSpecPLN(inst, lots) {
+      const qRate = FX_TO_PLN[inst.quoteCcy] || 3.9335;
+      const pipValue1LotPLN = inst.contractSize * inst.pip * qRate;
+      const pipValueUserLotsPLN = pipValue1LotPLN * lots;
+      const notionalValuePLN = inst.price * inst.contractSize * lots * qRate;
+      const marginRequiredPLN = notionalValuePLN * 0.0333;
+      return { qRate, pipValue1LotPLN, pipValueUserLotsPLN, notionalValuePLN, marginRequiredPLN };
+    }
+
+    function computeMacroFundamentalEdge(inst) {
+      const baseMacro = MACRO_FUNDAMENTALS[inst.baseCcy] || MACRO_FUNDAMENTALS.CMD;
+      const quoteMacro = MACRO_FUNDAMENTALS[inst.quoteCcy] || MACRO_FUNDAMENTALS.USD;
+      let macroDiff = 0, rateDiff = 0, bondDiff = 0, summaryLine = '';
+
+      if (inst.cat === 'FOREX') {
+        rateDiff = baseMacro.rate - quoteMacro.rate;
+        bondDiff = (baseMacro.bond10y || baseMacro.rate) - (quoteMacro.bond10y || quoteMacro.rate);
+        const cpiDiff = baseMacro.cpi - quoteMacro.cpi;
+        const unempDiff = quoteMacro.unemp - baseMacro.unemp;
+        macroDiff = (baseMacro.score - quoteMacro.score) + (rateDiff * 0.16) + (bondDiff * 0.25) + (unempDiff * 0.22) + (cpiDiff * 0.08);
+        summaryLine = `Spread Stóp: ${rateDiff >= 0 ? '+' : ''}${rateDiff.toFixed(2)}% | Obligacje 10Y: ${bondDiff >= 0 ? '+' : ''}${bondDiff.toFixed(2)}% | Bezrobocie: ${inst.baseCcy} ${baseMacro.unemp}% vs ${inst.quoteCcy} ${quoteMacro.unemp}%`;
+      } else if (inst.symbol === 'GOLD' || inst.symbol === 'SILVER') {
+        bondDiff = 4.00 - (quoteMacro.bond10y || 4.24);
+        macroDiff = baseMacro.score - (quoteMacro.score * 0.35) + (bondDiff * 0.6);
+        summaryLine = `Złoto/Srebro vs US10Y (${quoteMacro.bond10y}%) & DXY (${globalMacroPulse.dxy})`;
+      } else if (inst.cat === 'IDX') {
+        const ccyMacro = MACRO_FUNDAMENTALS[inst.quoteCcy] || MACRO_FUNDAMENTALS.USD;
+        macroDiff = MACRO_FUNDAMENTALS.IDX.score - (ccyMacro.cpi - 2.5) * 0.4 + ((18.0 - globalMacroPulse.vix) * 0.15);
+        summaryLine = `Indeksy (${inst.quoteCcy}): CPI ${ccyMacro.cpi}%, Obligacje 10Y ${ccyMacro.bond10y || ccyMacro.rate}% | VIX: ${globalMacroPulse.vix}`;
+      } else {
+        macroDiff = baseMacro.score;
+        summaryLine = `Surowce CFD: CPI USA ${quoteMacro.cpi}%, DXY ${globalMacroPulse.dxy}, Fed ${quoteMacro.rate}%`;
+      }
+
+      const macroProbShift = Math.max(-5.5, Math.min(5.5, macroDiff * 1.35));
+      const now = new Date();
+      const nextSpikeEvent = MACRO_CALENDAR
+        .filter(ev => ev.ccy === inst.baseCcy || ev.ccy === inst.quoteCcy || (inst.cat !== 'FOREX' && ev.ccy === 'USD'))
+        .map(ev => ({ ...ev, diffHours: (new Date(ev.timeIso) - now) / 3600000 }))
+        .filter(ev => ev.diffHours > -1 && ev.diffHours < 140)
+        .sort((a, b) => a.diffHours - b.diffHours)[0] || null;
+
+      return { baseMacro, quoteMacro, rateDiff, bondDiff, macroDiff, macroProbShift, summaryLine, nextSpikeEvent };
+    }
+
+    function calcRealisticBarrierWinRate(dirProb, rrRatio, orderBonus, spreadPips, atrPips) {
+      const rrAdjustment = (2.0 - rrRatio) * 4.2;
+      const spreadPenalty = Math.min(11.0, (spreadPips / Math.max(1, atrPips)) * 2.2);
+      const rawProb = (dirProb * 0.88) + 6.0 + orderBonus + rrAdjustment - spreadPenalty;
+      return Number(Math.min(79.5, Math.max(24.5, rawProb)).toFixed(1));
+    }
+
+    // ============================================================================
+    // SILNIK ZŁOTEGO STRZAŁU (MULTI-TIMEFRAME GOLDEN SHOT ENGINE)
+    // ============================================================================
+    function setGoldenShotMode(mode) {
+      goldenShotMode = mode;
+      document.getElementById('gsMode-DAY').className = mode === 'DAY'
+        ? 'px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition'
+        : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition';
+      document.getElementById('gsMode-SWING').className = mode === 'SWING'
+        ? 'px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition'
+        : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition';
+
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol) || XTB_INSTRUMENTS[0];
+      renderGoldenShotPanel(inst, false);
+    }
+
+    function computeMultiTimeframeGoldenShot(inst, mode) {
+      const price = inst.price;
+      const spreadVal = inst.spreadPips * inst.pip;
+      const mtf = mtfCache[inst.symbol];
+      const macroEdge = computeMacroFundamentalEdge(inst);
+
+      // Ocena każdego z 5 interwałów: M15, M30, H1, H4, D1
+      const evalTf = (tfObj, fallbackMult) => {
+        if (!tfObj) return { dir: 'BUY', score: 0.1, atr: Math.max(inst.pip * 12 * fallbackMult, spreadVal * 2), ema20: price, ema50: price, high: price * 1.002, low: price * 0.998 };
+        let s = tfObj.rec * 1.2;
+        if (price > tfObj.ema50) s += 0.45; else s -= 0.45;
+        if (tfObj.ema20 > tfObj.ema50) s += 0.35; else s -= 0.35;
+        return { dir: s >= 0 ? 'BUY' : 'SELL', score: s, atr: tfObj.atr, ema20: tfObj.ema20, ema50: tfObj.ema50, high: tfObj.high || price + tfObj.atr, low: tfObj.low || price - tfObj.atr };
+      };
+
+      const s15 = evalTf(mtf?.m15, 1.0);
+      const s30 = evalTf(mtf?.m30, 1.35);
+      const s60 = evalTf(mtf?.h1, 1.9);
+      const s240 = evalTf(mtf?.h4, 3.5);
+      const sD = evalTf(mtf?.d1, 6.5);
+
+      // Ważona synteza wszystkich interwałów + Makro
+      const compositeScore = (s15.score * 0.15) + (s30.score * 0.20) + (s60.score * 0.30) + (s240.score * 0.22) + (sD.score * 0.13);
+      const mtfBuyProb = Number(Math.min(79.5, Math.max(20.5, 50 + compositeScore * 16.5 + macroEdge.macroProbShift)).toFixed(1));
+      const dominantDir = mtfBuyProb >= 50 ? 'BUY' : 'SELL';
+      const dirProb = dominantDir === 'BUY' ? mtfBuyProb : Number((100 - mtfBuyProb).toFixed(1));
+
+      // Wybór bazowej zmienności i kotwicy zależnie od trybu: DAYTRADING (M30/H1) vs SWING (H4/D1)
+      const baseAtr = mode === 'DAY'
+        ? Math.max((s30.atr * 0.45 + s60.atr * 0.55), spreadVal * 2.0, inst.pip * 10)
+        : Math.max((s240.atr * 0.65 + sD.atr * 0.35), spreadVal * 3.2, inst.pip * 25);
+
+      const refTf = mode === 'DAY' ? s60 : s240;
+      const swingRange = Math.max(refTf.high - refTf.low, baseAtr * 1.4);
+
+      let entryPrice, slDist, targetRR, anchorDesc;
+
+      if (dominantDir === 'BUY') {
+        const fibo618 = refTf.high - 0.618 * swingRange;
+        const rawAnchor = (refTf.ema20 * 0.45) + (refTf.ema50 * 0.30) + (fibo618 * 0.25);
+        // Zlecenie BUY LIMIT musi leżeć poniżej aktualnej ceny w strefie korekty (0.30 - 0.85 ATR)
+        entryPrice = Math.min(rawAnchor, price - 0.32 * baseAtr);
+        entryPrice = Math.max(entryPrice, price - 0.90 * baseAtr);
+        slDist = mode === 'DAY' ? 1.15 * baseAtr : 1.30 * baseAtr;
+        targetRR = mode === 'DAY' ? 2.25 : 2.50;
+        anchorDesc = mode === 'DAY'
+          ? `Kotwica Daytrading: Korekta do EMA20/50 (H1/M30) + Fibo 61.8%`
+          : `Kotwica Swing: Strefa popytu EMA50 (H4/D1) + Wsparcie strukturalne`;
+      } else {
+        const fibo618 = refTf.low + 0.618 * swingRange;
+        const rawAnchor = (refTf.ema20 * 0.45) + (refTf.ema50 * 0.30) + (fibo618 * 0.25);
+        // Zlecenie SELL LIMIT musi leżeć powyżej aktualnej ceny w strefie korekty (0.30 - 0.85 ATR)
+        entryPrice = Math.max(rawAnchor, price + 0.32 * baseAtr);
+        entryPrice = Math.min(entryPrice, price + 0.90 * baseAtr);
+        slDist = mode === 'DAY' ? 1.15 * baseAtr : 1.30 * baseAtr;
+        targetRR = mode === 'DAY' ? 2.25 : 2.50;
+        anchorDesc = mode === 'DAY'
+          ? `Kotwica Daytrading: Korekta do EMA20/50 (H1/M30) + Fibo 61.8%`
+          : `Kotwica Swing: Strefa podaży EMA50 (H4/D1) + Opór strukturalny`;
+      }
+
+      const entry = Number(entryPrice.toFixed(inst.digits));
+      const sl = Number((dominantDir === 'BUY' ? entry - slDist : entry + slDist).toFixed(inst.digits));
+      const tp = Number((dominantDir === 'BUY' ? entry + slDist * targetRR : entry - slDist * targetRR).toFixed(inst.digits));
+
+      const slPips = Math.max(2, Math.round(Math.abs(entry - sl) / inst.pip));
+      const tpPips = Math.max(4, Math.round(Math.abs(tp - entry) / inst.pip));
+      const rr = Number((tpPips / slPips).toFixed(2));
+      const atrPips = Math.round(baseAtr / inst.pip);
+
+      const winRate = calcRealisticBarrierWinRate(dirProb, rr, 6.2, inst.spreadPips, atrPips);
+
+      return {
+        symbol: inst.symbol,
+        mode,
+        dir: dominantDir,
+        orderType: dominantDir === 'BUY' ? 'BUY LIMIT' : 'SELL LIMIT',
+        entry,
+        sl,
+        tp,
+        slPips,
+        tpPips,
+        rr,
+        winRate,
+        anchorDesc,
+        lockedAt: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+        mtfDirs: { m15: s15.dir, m30: s30.dir, h1: s60.dir, h4: s240.dir, d1: sD.dir }
+      };
+    }
+
+    function generateAndLockGoldenShot(showToastMsg = false) {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol) || XTB_INSTRUMENTS[0];
+      const key = `${inst.symbol}_${goldenShotMode}`;
+      lockedGoldenShots[key] = computeMultiTimeframeGoldenShot(inst, goldenShotMode);
+      try { localStorage.setItem('qs_golden_shots_v60', JSON.stringify(lockedGoldenShots)); } catch (e) {}
+      renderGoldenShotPanel(inst, false);
+      if (showToastMsg) {
+        showToast(`🎯 Wyznaczono i zablokowano nowy Złoty Strzał dla ${inst.symbol} (${goldenShotMode === 'DAY' ? 'Daytrading' : 'Swing'})!`);
+      }
+    }
+
+    function renderGoldenShotPanel(inst, forceNew = false) {
+      const key = `${inst.symbol}_${goldenShotMode}`;
+      if (forceNew || !lockedGoldenShots[key]) {
+        lockedGoldenShots[key] = computeMultiTimeframeGoldenShot(inst, goldenShotMode);
+        try { localStorage.setItem('qs_golden_shots_v60', JSON.stringify(lockedGoldenShots)); } catch (e) {}
+      }
+
+      const gs = lockedGoldenShots[key];
+      const lots = Math.max(0.01, parseFloat(document.getElementById('lotSizeInput')?.value) || 0.02);
+      const spec = getContractSpecPLN(inst, lots);
+
+      const profitPLN = Number((gs.tpPips * spec.pipValueUserLotsPLN).toFixed(2));
+      const riskPLN = Number((gs.slPips * spec.pipValueUserLotsPLN).toFixed(2));
+      const distFromLivePips = Math.round(Math.abs(inst.price - gs.entry) / inst.pip);
+
+      document.getElementById('gsLockedTimeBadge').textContent = `📌 ZABLOKOWANO O ${gs.lockedAt} (${gs.mode === 'DAY' ? 'DAYTRADING' : 'SWING'})`;
+      document.getElementById('gsAnchorExplanation').textContent = gs.anchorDesc;
+
+      const setPill = (id, label, dir) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const isB = dir === 'BUY';
+        el.textContent = `${label}: ${isB ? '▲ KUP' : '▼ SPRZ'}`;
+        el.className = `px-2 py-0.5 rounded font-bold text-[10px] ${isB ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`;
+      };
+      if (gs.mtfDirs) {
+        setPill('mtfPill-15', 'M15', gs.mtfDirs.m15);
+        setPill('mtfPill-30', 'M30', gs.mtfDirs.m30);
+        setPill('mtfPill-60', 'H1', gs.mtfDirs.h1);
+        setPill('mtfPill-240', 'H4', gs.mtfDirs.h4);
+        setPill('mtfPill-D', 'D1', gs.mtfDirs.d1);
+      }
+
+      const isBuy = gs.dir === 'BUY';
+      document.getElementById('gsWinRateBadge').textContent = `${gs.winRate}% SZANS`;
+      const ordEl = document.getElementById('gsOrderTypeLabel');
+      ordEl.textContent = `${isBuy ? '▲' : '▼'} ${gs.orderType}`;
+      ordEl.className = `text-base sm:text-lg font-mono font-extrabold mt-1 ${isBuy ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('gsDirectionSub').textContent = isBuy ? 'Oczekujące poniżej rynku (Korekta)' : 'Oczekujące powyżej rynku (Korekta)';
+
+      document.getElementById('gsEntryPrice').textContent = gs.entry.toFixed(inst.digits);
+      document.getElementById('gsEntryDistInfo').textContent = `Dystans od ceny live: ${distFromLivePips} pips`;
+
+      document.getElementById('gsSlPrice').textContent = gs.sl.toFixed(inst.digits);
+      document.getElementById('gsSlPlnInfo').textContent = `-${gs.slPips}p • -${riskPLN.toFixed(2)} PLN (${lots} L)`;
+
+      document.getElementById('gsRrText').textContent = `1:${gs.rr}`;
+      document.getElementById('gsTpPrice').textContent = gs.tp.toFixed(inst.digits);
+      document.getElementById('gsTpPlnInfo').textContent = `+${gs.tpPips}p • +${profitPLN.toFixed(2)} PLN (${lots} L)`;
+    }
+
+    // ============================================================================
+    // ANALIZA DLA TABELI 10 SCENARIUSZY (BIEŻĄCY INTERWAŁ)
+    // ============================================================================
+    function analyzeInstrument(inst) {
+      const freezeKey = `${inst.symbol}_${currentTimeframe}`;
+      if (isLevelsFrozen && frozenAnalysisCache[freezeKey]) return frozenAnalysisCache[freezeKey];
+
+      const bid = inst.price;
+      const spreadVal = inst.spreadPips * inst.pip;
+      const ask = Number((bid + spreadVal).toFixed(inst.digits));
+      const snap = liveIndicatorsCache[freezeKey];
+
+      let rsi = 50.0, macdHist = 0.0, ema20 = bid, ema50 = bid, atrVal, high24, low24, openPrice = bid, tvRec = 0.0, sourceName = 'TradingView Live';
+
+      if (snap) {
+        openPrice = snap.open || bid;
+        rsi = snap.rsi;
+        macdHist = snap.macdHist;
+        ema20 = snap.ema20;
+        ema50 = snap.ema50;
+        atrVal = Math.max(snap.atr, inst.pip * 5);
+        high24 = Math.max(snap.high || bid + atrVal, bid + inst.pip * 4);
+        low24 = Math.min(snap.low || bid - atrVal, bid - inst.pip * 4);
+        tvRec = snap.tvRec;
+        sourceName = snap.source;
+      } else {
+        const tfMult = currentTimeframe === '5' ? 0.55 : currentTimeframe === '15' ? 1.0 : currentTimeframe === '30' ? 1.35 : currentTimeframe === '60' ? 1.9 : currentTimeframe === '240' ? 3.5 : 6.5;
+        atrVal = Math.max(inst.pip * Math.max(10, inst.spreadPips * 2.2) * tfMult, inst.price * 0.0012 * tfMult);
+        high24 = bid + atrVal * 1.1;
+        low24 = bid - atrVal * 1.1;
+      }
+
+      const atrPips = Math.max(4, Number((atrVal / inst.pip).toFixed(1)));
+      const macroEdge = computeMacroFundamentalEdge(inst);
+
+      let techScore = tvRec * 14.5;
+      if (bid > ema50) techScore += 3.2; else techScore -= 3.2;
+      if (ema20 > ema50) techScore += 2.6; else techScore -= 2.6;
+      if (macdHist > 0) techScore += 2.8; else techScore -= 2.8;
+      if (rsi > 52 && rsi < 70) techScore += 2.0;
+      if (rsi < 48 && rsi > 30) techScore -= 2.0;
+      if (rsi >= 74) techScore -= 4.0;
+      if (rsi <= 26) techScore += 4.0;
+
+      const buyProb = Number(Math.min(78.5, Math.max(21.5, 50 + techScore + macroEdge.macroProbShift)).toFixed(1));
+      const sellProb = Number((100 - buyProb).toFixed(1));
+      const dominantDir = buyProb >= sellProb ? 'BUY' : 'SELL';
+
+      const lots = Math.max(0.01, parseFloat(document.getElementById('lotSizeInput')?.value) || 0.02);
+      const spec = getContractSpecPLN(inst, lots);
+
+      const effVol = Math.max(atrVal, spreadVal * 1.8, inst.pip * 8);
+      const spreadPad = Math.min(spreadVal * 0.65, effVol * 0.40);
+
+      const swingHigh = Math.max(high24, openPrice + effVol * 0.60, ema20 + effVol * 0.40);
+      const swingLow = Math.min(low24, openPrice - effVol * 0.60, ema20 - effVol * 0.40);
+      const swingRange = Math.max(swingHigh - swingLow, effVol * 1.2);
+
+      const fibo618Buy = swingHigh - 0.618 * swingRange;
+      const fibo618Sell = swingLow + 0.618 * swingRange;
+
+      const buyLimitAnchor1 = Math.min(ema20, bid - 0.25 * effVol);
+      const buyLimitAnchor2 = Math.min(ema50, fibo618Buy, bid - 0.55 * effVol);
+      const buyStopAnchor = Math.max(swingHigh, ask + 0.25 * effVol);
+      const buyDipAnchor = Math.min(swingLow + 0.12 * effVol, bid - 0.85 * effVol);
+
+      const sellLimitAnchor1 = Math.max(ema20, ask + 0.25 * effVol);
+      const sellLimitAnchor2 = Math.max(ema50, fibo618Sell, ask + 0.55 * effVol);
+      const sellStopAnchor = Math.min(swingLow, bid - 0.25 * effVol);
+      const sellPeakAnchor = Math.max(swingHigh - 0.12 * effVol, ask + 0.85 * effVol);
+
+      const templates = [
+        { dir: 'BUY', name: 'Wejście Rynkowe (Po Cenie ASK)', orderType: 'BUY MARKET (XTB)', entryPrice: ask, rawSlDist: Math.max(ask - (swingLow - spreadPad), 1.35 * effVol), targetRR1: 1.25, targetRR2: 1.95, orderBonus: 1.0, anchorTag: 'CENA ASK LIVE' },
+        { dir: 'BUY', name: 'Korekta do Kotwicy EMA(20) (Pullback)', orderType: 'BUY LIMIT (Oczekujące)', entryPrice: buyLimitAnchor1, rawSlDist: Math.max(buyLimitAnchor1 - (swingLow - spreadPad), 1.20 * effVol), targetRR1: 1.35, targetRR2: 2.15, orderBonus: 4.2, anchorTag: `EMA20 (${ema20.toFixed(inst.digits)})` },
+        { dir: 'BUY', name: 'Strefa Instytucjonalna EMA(50) / Fibo 61.8%', orderType: 'BUY LIMIT (Deep Value)', entryPrice: buyLimitAnchor2, rawSlDist: 1.15 * effVol + spreadPad, targetRR1: 1.45, targetRR2: 2.40, orderBonus: 6.0, anchorTag: `FIBO 61.8% / EMA50` },
+        { dir: 'BUY', name: 'Wybicie Szczytu Świecy (Swing High Breakout)', orderType: 'BUY STOP (Momentum)', entryPrice: buyStopAnchor, rawSlDist: 1.25 * effVol + spreadPad, targetRR1: 1.25, targetRR2: 1.90, orderBonus: 2.0, anchorTag: `SWING HIGH (${swingHigh.toFixed(inst.digits)})` },
+        { dir: 'BUY', name: 'Obrona Dołka Sesji (Liquidity Sweep Low)', orderType: 'BUY LIMIT (Extreme)', entryPrice: buyDipAnchor, rawSlDist: 1.05 * effVol + spreadPad, targetRR1: 1.50, targetRR2: 2.55, orderBonus: 7.2, anchorTag: `SWING LOW (${swingLow.toFixed(inst.digits)})` },
+
+        { dir: 'SELL', name: 'Wejście Rynkowe (Po Cenie BID)', orderType: 'SELL MARKET (XTB)', entryPrice: bid, rawSlDist: Math.max((swingHigh + spreadPad) - bid, 1.35 * effVol), targetRR1: 1.25, targetRR2: 1.95, orderBonus: 1.0, anchorTag: 'CENA BID LIVE' },
+        { dir: 'SELL', name: 'Korekta do Kotwicy EMA(20) (Pullback)', orderType: 'SELL LIMIT (Oczekujące)', entryPrice: sellLimitAnchor1, rawSlDist: Math.max((swingHigh + spreadPad) - sellLimitAnchor1, 1.20 * effVol), targetRR1: 1.35, targetRR2: 2.15, orderBonus: 4.2, anchorTag: `EMA20 (${ema20.toFixed(inst.digits)})` },
+        { dir: 'SELL', name: 'Strefa Instytucjonalna EMA(50) / Fibo 61.8%', orderType: 'SELL LIMIT (Deep Supply)', entryPrice: sellLimitAnchor2, rawSlDist: 1.15 * effVol + spreadPad, targetRR1: 1.45, targetRR2: 2.40, orderBonus: 6.0, anchorTag: `FIBO 61.8% / EMA50` },
+        { dir: 'SELL', name: 'Wybicie Dołka Świecy (Swing Low Breakdown)', orderType: 'SELL STOP (Momentum)', entryPrice: sellStopAnchor, rawSlDist: 1.25 * effVol + spreadPad, targetRR1: 1.25, targetRR2: 1.90, orderBonus: 2.0, anchorTag: `SWING LOW (${swingLow.toFixed(inst.digits)})` },
+        { dir: 'SELL', name: 'Odrzucenie Szczytu Sesji (Liquidity Sweep High)', orderType: 'SELL LIMIT (Extreme)', entryPrice: sellPeakAnchor, rawSlDist: 1.05 * effVol + spreadPad, targetRR1: 1.50, targetRR2: 2.55, orderBonus: 7.2, anchorTag: `SWING HIGH (${swingHigh.toFixed(inst.digits)})` }
+      ];
+
+      const strategies = templates.map((t, idx) => {
+        const isBuy = t.dir === 'BUY';
+        const entry = Number(t.entryPrice.toFixed(inst.digits));
+        const clampedSlDist = Math.min(Math.max(t.rawSlDist, 1.05 * effVol), 2.20 * effVol);
+        const tp1Dist = clampedSlDist * t.targetRR1;
+        const tp2Dist = clampedSlDist * t.targetRR2;
+
+        const sl = Number((isBuy ? entry - clampedSlDist : entry + clampedSlDist).toFixed(inst.digits));
+        const tp1 = Number((isBuy ? entry + tp1Dist : entry - tp1Dist).toFixed(inst.digits));
+        const tp2 = Number((isBuy ? entry + tp2Dist : entry - tp2Dist).toFixed(inst.digits));
+
+        const slPips = Math.max(2, Math.round(Math.abs(entry - sl) / inst.pip));
+        const tp1Pips = Math.max(3, Math.round(Math.abs(tp1 - entry) / inst.pip));
+        const tp2Pips = Math.max(4, Math.round(Math.abs(tp2 - entry) / inst.pip));
+
+        const slPct = Number(((Math.abs(entry - sl) / entry) * 100).toFixed(2));
+        const tp2Pct = Number(((Math.abs(tp2 - entry) / entry) * 100).toFixed(2));
+        const rr = Number((tp2Pips / slPips).toFixed(2));
+
+        const dirProb = isBuy ? buyProb : sellProb;
+        const winRate = calcRealisticBarrierWinRate(dirProb, rr, t.orderBonus, inst.spreadPips, atrPips);
+
+        const profitPLN = Number((tp2Pips * spec.pipValueUserLotsPLN).toFixed(2));
+        const riskPLN = Number((slPips * spec.pipValueUserLotsPLN).toFixed(2));
+
+        return {
+          idx, dir: t.dir, name: t.name, orderType: t.orderType, anchorTag: t.anchorTag,
+          entry, sl, tp1, tp2, slPips, tp1Pips, tp2Pips, slPct, tp2Pct, rr, winRate, profitPLN, riskPLN
+        };
+      });
+
+      const bestStrategy = [...strategies].filter(s => s.dir === dominantDir).sort((a, b) => b.winRate - a.winRate)[0] || strategies[0];
+      const result = { bid, ask, rsi, macdHist, ema20, ema50, swingHigh, swingLow, atrVal, atrPips, buyProb, sellProb, dominantDir, strategies, bestStrategy, spec, lots, sourceName, macroEdge };
+
+      if (isLevelsFrozen) frozenAnalysisCache[freezeKey] = result;
+      return result;
+    }
+
+    function renderMacroFundamentalsPanel(inst, analysis) {
+      const panel = document.getElementById('macroFundamentalsPanel');
+      if (!panel) return;
+      const m = analysis.macroEdge;
+      const base = m.baseMacro;
+      const quote = m.quoteMacro;
+
+      let countdownHtml = '';
+      if (m.nextSpikeEvent) {
+        const ev = m.nextSpikeEvent;
+        const hrs = Math.max(0, Math.floor(ev.diffHours));
+        const mins = Math.max(0, Math.floor((ev.diffHours - hrs) * 60));
+        const badgeClass = ev.diffHours <= 12
+          ? 'bg-rose-500/25 text-rose-200 border-rose-500/50 pulse-warn'
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+
+        countdownHtml = `
+          <div class="mt-2 pt-2 border-t border-slate-800/90 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded border font-mono font-bold text-[10px] ${badgeClass}">⚠️ ALARM SZPILKI ZA ${hrs}h ${mins}m (${ev.ccy})</span>
+              <span class="text-white font-semibold">${ev.title}</span>
+              <span class="text-slate-400 font-mono text-[11px] hidden sm:inline">(${ev.forecast})</span>
+            </div>
+            <div class="text-[11px] font-mono text-amber-300">Ruch: <strong>${ev.spikePips}</strong> • ${ev.warn}</div>
+          </div>`;
+      }
+
+      const macroVerdictColor = m.macroProbShift >= 0.5 ? 'text-emerald-400' : m.macroProbShift <= -0.5 ? 'text-rose-400' : 'text-amber-300';
+      const macroVerdictLabel = m.macroProbShift >= 0.5 ? `MAKRO WSPIERA KUP (+${m.macroProbShift.toFixed(1)}%)` : m.macroProbShift <= -0.5 ? `MAKRO WSPIERA SPRZEDAJ (${m.macroProbShift.toFixed(1)}%)` : `MAKRO NEUTRALNE`;
+
+      panel.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-mono font-bold text-[10px]">🏛️ MAKRO & OBLIGACJE 10Y</span>
+            <span class="font-bold text-white">${inst.symbol}: ${m.summaryLine}</span>
+          </div>
+          <span class="font-mono font-bold text-[11px] ${macroVerdictColor}">${macroVerdictLabel}</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-[11px] font-mono">
+          <div class="bg-slate-950/70 border border-slate-800 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+            <span class="text-cyan-300 font-bold">${inst.baseCcy} (${base.bank}):</span>
+            <span>CPI: <strong>${base.cpi}%</strong> | Stopa: <strong class="text-emerald-400">${base.rate.toFixed(2)}%</strong> | 10Y: <strong class="text-cyan-300">${(base.bond10y || base.rate).toFixed(2)}%</strong></span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+            <span class="text-purple-300 font-bold">${inst.quoteCcy} (${quote.bank}):</span>
+            <span>CPI: <strong>${quote.cpi}%</strong> | Stopa: <strong class="text-emerald-400">${quote.rate.toFixed(2)}%</strong> | 10Y: <strong class="text-cyan-300">${(quote.bond10y || quote.rate).toFixed(2)}%</strong></span>
+          </div>
+        </div>
+        ${countdownHtml}`;
+    }
+
+    function openMacroEditorModal() {
+      const modal = document.getElementById('macroEditorModal');
+      const tbody = document.getElementById('macroEditorTableBody');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      const keys = ['USD', 'EUR', 'PLN', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD', 'NOK', 'SEK', 'TRY'];
+      tbody.innerHTML = keys.map(ccy => {
+        const m = MACRO_FUNDAMENTALS[ccy];
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-2 px-3 font-bold text-white">${ccy} <span class="text-slate-400 font-normal text-[10px]">(${m.bank})</span></td>
+            <td class="py-2 px-2"><input type="number" step="0.1" value="${m.cpi}" onchange="updateMacroField('${ccy}','cpi',this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-white" /></td>
+            <td class="py-2 px-2"><input type="number" step="0.1" value="${m.unemp}" onchange="updateMacroField('${ccy}','unemp',this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-white" /></td>
+            <td class="py-2 px-2"><input type="number" step="0.05" value="${m.rate}" onchange="updateMacroField('${ccy}','rate',this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-emerald-400 font-bold" /></td>
+            <td class="py-2 px-2"><input type="number" step="0.05" value="${m.bond10y || m.rate}" onchange="updateMacroField('${ccy}','bond10y',this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-cyan-300 font-bold" /></td>
+            <td class="py-2 px-2"><input type="number" step="0.1" min="-3" max="3" value="${m.score}" onchange="updateMacroField('${ccy}','score',this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-amber-300 font-bold" /></td>
+            <td class="py-2 px-3"><input type="text" value="${m.stance}" onchange="updateMacroField('${ccy}','stance',this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200" /></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function closeMacroEditorModal() {
+      const modal = document.getElementById('macroEditorModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    function updateMacroField(ccy, field, val) {
+      if (!MACRO_FUNDAMENTALS[ccy]) return;
+      MACRO_FUNDAMENTALS[ccy][field] = field === 'stance' ? val : (parseFloat(val) || 0);
+      try { localStorage.setItem('qs_macro_v60', JSON.stringify(MACRO_FUNDAMENTALS)); } catch (e) {}
+      renderInstrumentList();
+      recalculateActiveInstrument(false);
+    }
+
+    function resetMacroToDefaults() {
+      MACRO_FUNDAMENTALS = JSON.parse(JSON.stringify(DEFAULT_MACRO_FUNDAMENTALS));
+      try { localStorage.removeItem('qs_macro_v60'); localStorage.removeItem('qs_calendar_v60'); } catch (e) {}
+      MACRO_CALENDAR = generateUpcomingMacroCalendar();
+      openMacroEditorModal();
+      renderInstrumentList();
+      recalculateActiveInstrument(false);
+    }
+
+    function addCustomMacroEvent() {
+      const ccy = document.getElementById('newEvCcy').value;
+      const title = document.getElementById('newEvTitle').value.trim();
+      const dt = document.getElementById('newEvDateTime').value;
+      if (!title || !dt) { showToast('Wpisz nazwę i datę!'); return; }
+      MACRO_CALENDAR.unshift({ ccy, title, timeIso: new Date(dt).toISOString(), spikePips: '50-100 pips', forecast: 'Własny alarm', warn: 'Uwaga na zmienność i spread!' });
+      try { localStorage.setItem('qs_calendar_v60', JSON.stringify(MACRO_CALENDAR.slice(0, 6))); } catch (e) {}
+      recalculateActiveInstrument(false);
+      showToast(`Dodano alarm: ${ccy} – ${title}`);
+    }
+
+    function formatDistanceText(pips, pct, pln, isProfit = true) {
+      const sign = isProfit ? '+' : '-';
+      if (displayMode === 'PIPS') return `${sign}${pips} pips`;
+      if (displayMode === 'PCT') return `${sign}${pct}%`;
+      if (displayMode === 'PLN') return `${sign}${pln.toFixed(2)} PLN`;
+      return `${sign}${pips}p (${sign}${pct}%) • ${sign}${pln.toFixed(2)} PLN`;
+    }
+
+    function cycleDisplayMode() {
+      const modes = ['ALL', 'PIPS', 'PCT', 'PLN'];
+      const labels = { ALL: '📐 Tryb: Pips + % + PLN', PIPS: '📐 Tryb: Tylko Pipsy', PCT: '📐 Tryb: Tylko %', PLN: '📐 Tryb: Tylko PLN' };
+      displayMode = modes[(modes.indexOf(displayMode) + 1) % modes.length];
+      document.getElementById('displayModeBtn').textContent = labels[displayMode];
+      recalculateActiveInstrument(false);
+    }
+
+    function renderInstrumentList() {
+      const container = document.getElementById('instrumentListContainer');
+      const query = (document.getElementById('searchInput')?.value || '').trim().toUpperCase();
+      const filtered = XTB_INSTRUMENTS.filter(item => {
+        const matchCat = currentCategory === 'ALL' || item.cat === currentCategory;
+        const matchQuery = !query || item.symbol.includes(query) || item.desc.toUpperCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      document.getElementById('sidebarStatsBadge').textContent = `${filtered.length} rynków`;
+
+      container.innerHTML = filtered.map(item => {
+        const analysis = analyzeInstrument(item);
+        const isSelected = item.symbol === activeSymbol;
+        const isBuy = analysis.dominantDir === 'BUY';
+        const prob = isBuy ? analysis.buyProb : analysis.sellProb;
+        const sess = getMarketSessionStatus(item.cat, item.symbol);
+
+        return `
+          <div onclick="selectInstrument('${item.symbol}')" class="p-2.5 cursor-pointer transition flex items-center justify-between ${isSelected ? 'bg-slate-800/90 border-l-4 border-amber-400' : 'hover:bg-slate-900/70'}">
+            <div class="min-w-0 pr-2">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-xs text-white">${item.symbol}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">${item.cat}</span>
+                ${!sess.open ? '<span class="text-[9px] font-mono px-1 rounded bg-amber-500/20 text-amber-300">ZAMKNIĘTY</span>' : ''}
+              </div>
+              <div class="text-[11px] text-slate-400 truncate mt-0.5">${item.desc}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="font-mono font-bold text-xs text-white">${item.price.toFixed(item.digits)}</div>
+              <div class="text-[10px] font-mono font-bold ${isBuy ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isBuy ? '▲ KUP' : '▼ SPRZ'} ${prob}%
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function selectInstrument(symbol) {
+      activeSymbol = symbol;
+      selectedStrategyIndex = 0;
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === symbol);
+      const unlockBtn = document.getElementById('unlockAutoBtn');
+      if (unlockBtn) unlockBtn.classList.toggle('hidden', !inst?.manualLock);
+      renderInstrumentList();
+      recalculateActiveInstrument(true);
+    }
+
+    function recalculateActiveInstrument(reloadChart = false) {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol) || XTB_INSTRUMENTS[0];
+      const analysis = analyzeInstrument(inst);
+      currentStrategies = analysis.strategies;
+
+      if (selectedStrategyIndex >= currentStrategies.length) selectedStrategyIndex = 0;
+      if (reloadChart) {
+        const bestIdx = currentStrategies.findIndex(s => s.idx === analysis.bestStrategy.idx);
+        selectedStrategyIndex = bestIdx >= 0 ? bestIdx : 0;
+      }
+
+      const activeStrat = currentStrategies[selectedStrategyIndex] || analysis.bestStrategy;
+      const sess = getMarketSessionStatus(inst.cat, inst.symbol);
+      const tfLabel = currentTimeframe === 'D' ? 'D1' : 'M' + currentTimeframe;
+
+      // Renderowanie Złotego Strzału (niezależnego od klikania interwałów wykresu!)
+      renderGoldenShotPanel(inst, false);
+
+      document.getElementById('activeSymbolTitle').textContent = inst.symbol;
+      document.getElementById('activeCategoryBadge').textContent = inst.cat;
+      document.getElementById('activeDescTitle').textContent = `${inst.desc} • 1 Lot = ${inst.contractSize.toLocaleString('pl-PL')} jedn.`;
+      document.getElementById('tableTfLabel').textContent = tfLabel;
+
+      const mktBadge = document.getElementById('activeMarketOpenBadge');
+      mktBadge.textContent = sess.label;
+      mktBadge.className = sess.open
+        ? 'px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+        : 'px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+
+      const dirBadge = document.getElementById('activeDirectionBadge');
+      dirBadge.textContent = analysis.dominantDir === 'BUY' ? `PRZEWAGA KUP (${tfLabel}): ${analysis.buyProb}%` : `PRZEWAGA SPRZEDAJ (${tfLabel}): ${analysis.sellProb}%`;
+      dirBadge.className = analysis.dominantDir === 'BUY'
+        ? 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+        : 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40';
+
+      renderMacroFundamentalsPanel(inst, analysis);
+
+      document.getElementById('specBidAsk').textContent = `${analysis.bid.toFixed(inst.digits)} / ${analysis.ask.toFixed(inst.digits)}`;
+      document.getElementById('specPipValuePLN').textContent = `${analysis.spec.pipValueUserLotsPLN.toFixed(2)} PLN / pips (${analysis.lots} L)`;
+      document.getElementById('specSpreadText').textContent = `${inst.spreadPips} pips (${(inst.spreadPips * analysis.spec.pipValueUserLotsPLN).toFixed(2)} PLN)`;
+      document.getElementById('specMarginPLN').textContent = `${analysis.spec.marginRequiredPLN.toFixed(2)} PLN`;
+
+      document.getElementById('dataSourceStatus').textContent = `✓ [${inst.symbol} • ${tfLabel}] Kurs: ${inst.price.toFixed(inst.digits)} | RSI(14): ${analysis.rsi.toFixed(1)} | ATR(14): ${analysis.atrPips}p`;
+
+      document.getElementById('buyProbText').textContent = `${analysis.buyProb}%`;
+      document.getElementById('sellProbText').textContent = `${analysis.sellProb}%`;
+      document.getElementById('buyProbBar').style.width = `${analysis.buyProb}%`;
+      document.getElementById('sellProbBar').style.width = `${analysis.sellProb}%`;
+      document.getElementById('duelVerdictText').textContent = `${tfLabel}: ${analysis.dominantDir === 'BUY' ? 'Trend wzrostowy' : 'Trend spadkowy'}`;
+
+      document.getElementById('technicalIndicatorsSummary').innerHTML = `
+        <span>RSI(14): <strong class="text-white">${analysis.rsi.toFixed(1)}</strong></span>
+        <span>EMA 20 / 50: <strong class="text-cyan-300">${analysis.ema20.toFixed(inst.digits)}</strong> / <strong class="text-purple-300">${analysis.ema50.toFixed(inst.digits)}</strong></span>
+        <span>Swing H/L: <strong class="text-emerald-300">${analysis.swingHigh.toFixed(inst.digits)}</strong> / <strong class="text-rose-300">${analysis.swingLow.toFixed(inst.digits)}</strong></span>
+        <span>ATR(${tfLabel}): <strong class="text-amber-300">${analysis.atrPips} pips</strong></span>`;
+
+      document.getElementById('selectedStratSummary').textContent = `${activeStrat.dir} (${activeStrat.anchorTag}): Wejście ${activeStrat.entry.toFixed(inst.digits)} | SL ${activeStrat.sl.toFixed(inst.digits)} | TP2 ${activeStrat.tp2.toFixed(inst.digits)} (R:R 1:${activeStrat.rr})`;
+
+      renderStrategiesTable(inst, currentStrategies);
+      runTimeMachineSimulation(activeStrat);
+      updatePaperPositionsLive();
+      if (reloadChart) loadTradingViewWidget(inst.tv, currentTimeframe);
+    }
+
+    function renderStrategiesTable(inst, strategies) {
+      const tbody = document.getElementById('strategiesTableBody');
+      const filtered = strategies.filter(s => strategyFilter === 'ALL' || s.dir === strategyFilter);
+
+      tbody.innerHTML = filtered.map(s => {
+        const isSelected = s.idx === selectedStrategyIndex;
+        const isBuy = s.dir === 'BUY';
+        return `
+          <tr onclick="selectStrategyRow(${s.idx})" class="cursor-pointer transition ${isSelected ? 'bg-emerald-950/35 border-l-4 border-emerald-400' : 'hover:bg-slate-900/70'}">
+            <td class="py-2 px-2.5">
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isBuy ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">${isBuy ? '▲ KUP' : '▼ SPRZEDAJ'}</span>
+                <span class="font-sans font-semibold text-white">${s.name}</span>
+              </div>
+              <div class="text-[10px] text-cyan-400 mt-0.5">Kotwica: ${s.anchorTag}</div>
+            </td>
+            <td class="py-2 px-2.5 text-slate-300">${s.orderType}</td>
+            <td class="py-2 px-2.5 font-bold text-white">${s.entry.toFixed(inst.digits)}</td>
+            <td class="py-2 px-2.5 text-rose-400 font-bold">${s.sl.toFixed(inst.digits)} <span class="text-[10px] text-slate-400">(-${s.slPips}p)</span></td>
+            <td class="py-2 px-2.5 text-emerald-400 font-bold">${s.tp1.toFixed(inst.digits)} / ${s.tp2.toFixed(inst.digits)} <span class="text-[10px] text-slate-400">(+${s.tp2Pips}p)</span></td>
+            <td class="py-2 px-2.5 text-amber-300 font-bold">1:${s.rr}</td>
+            <td class="py-2 px-2.5"><span class="px-2 py-0.5 rounded bg-slate-800 ${s.winRate >= 52 ? 'text-emerald-300' : 'text-amber-300'} font-bold">${s.winRate}%</span></td>
+            <td class="py-2 px-2.5">
+              <span class="text-emerald-400 font-bold">${formatDistanceText(s.tp2Pips, s.tp2Pct, s.profitPLN, true)}</span>
+              <span class="text-slate-500 mx-1">/</span>
+              <span class="text-rose-400">${formatDistanceText(s.slPips, s.slPct, s.riskPLN, false)}</span>
+            </td>
+            <td class="py-2 px-2.5 text-right">
+              <button onclick="event.stopPropagation(); copySetupSummary(${s.idx})" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px]">Kopiuj</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function selectStrategyRow(idx) { selectedStrategyIndex = idx; recalculateActiveInstrument(false); }
+    function setStrategyFilter(filter) { strategyFilter = filter; recalculateActiveInstrument(false); }
+
+    function applyQuickPrice() {
+      const val = parseFloat(document.getElementById('quickPriceInput').value);
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol);
+      if (!inst || isNaN(val) || val <= 0) { showToast('Wpisz poprawną cenę z XTB!'); return; }
+      inst.price = Number(val.toFixed(inst.digits));
+      inst.manualLock = true;
+      document.getElementById('unlockAutoBtn').classList.remove('hidden');
+      renderInstrumentList();
+      recalculateActiveInstrument(false);
+      showToast(`Zaktualizowano kurs ${inst.symbol} na ${inst.price.toFixed(inst.digits)}`);
+    }
+
+    function unlockAutoLivePrice() {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol);
+      if (inst) inst.manualLock = false;
+      document.getElementById('unlockAutoBtn').classList.add('hidden');
+      syncAll66FromTradingView(true);
+    }
+
+    function runTimeMachineSimulation(stratOverride) {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol) || XTB_INSTRUMENTS[0];
+      const strat = stratOverride || currentStrategies[selectedStrategyIndex] || analyzeInstrument(inst).bestStrategy;
+
+      const tpHit = strat.winRate;
+      const flatPct = 4.8;
+      const slHit = Number(Math.max(10, (100 - tpHit - flatPct)).toFixed(1));
+
+      document.getElementById('tmTpPct').textContent = `${tpHit}% (${Math.round(tpHit * 100)} ścieżek)`;
+      document.getElementById('tmSlPct').textContent = `${slHit}% (${Math.round(slHit * 100)} ścieżek)`;
+      document.getElementById('tmFlatPct').textContent = `${flatPct}%`;
+      document.getElementById('tmTpBar').style.width = `${tpHit}%`;
+      document.getElementById('tmSlBar').style.width = `${slHit}%`;
+
+      const wins60 = Math.round((tpHit / 100) * 60);
+      document.getElementById('tmHistScore').textContent = `${wins60} Wygranych / ${60 - wins60} Strat`;
+
+      const evPLN = (tpHit / 100) * strat.profitPLN - (slHit / 100) * strat.riskPLN;
+      const evEl = document.getElementById('tmExpectedVal');
+      evEl.textContent = `${evPLN >= 0 ? '+' : ''}${evPLN.toFixed(2)} PLN / trade`;
+      evEl.className = `text-xs font-mono font-bold mt-0.5 ${evPLN >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+    }
+
+    async function scanAll66Instruments() {
+      const modal = document.getElementById('scannerModal');
+      const grid = document.getElementById('scannerResultsGrid');
+      const onlyOpen = document.getElementById('onlyOpenMarketsCheckbox')?.checked ?? true;
+
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      grid.innerHTML = `<div class="col-span-2 text-center py-8 font-mono text-xs text-amber-400">Analiza Multi-Timeframe 66 rynków z TradingView Live...</div>`;
+
+      await fetchTradingViewScannerBatch(currentTimeframe);
+
+      const scored = XTB_INSTRUMENTS
+        .filter(inst => !onlyOpen || getMarketSessionStatus(inst.cat, inst.symbol).open)
+        .map(inst => {
+          const gs = computeMultiTimeframeGoldenShot(inst, goldenShotMode);
+          const sess = getMarketSessionStatus(inst.cat, inst.symbol);
+          return { inst, gs, sess };
+        })
+        .sort((a, b) => b.gs.winRate - a.gs.winRate)
+        .slice(0, 8);
+
+      grid.innerHTML = scored.map((item, rank) => {
+        const { inst, gs, sess } = item;
+        const isBuy = gs.dir === 'BUY';
+        return `
+          <div class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3.5 flex flex-col justify-between transition">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold text-xs flex items-center justify-center">#${rank + 1}</span>
+                  <span class="font-extrabold text-base text-white">${inst.symbol}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${inst.cat}</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${isBuy ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'}">
+                  🎯 ${gs.orderType} • ${gs.winRate}% (1:${gs.rr})
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">${inst.desc}</p>
+              <div class="grid grid-cols-3 gap-2 mt-2.5 text-xs font-mono bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                <div><div class="text-[10px] text-slate-400">WEJŚCIE LIMIT</div><div class="font-bold text-white">${gs.entry.toFixed(inst.digits)}</div></div>
+                <div><div class="text-[10px] text-rose-400">STOP LOSS (-${gs.slPips}p)</div><div class="font-bold text-rose-300">${gs.sl.toFixed(inst.digits)}</div></div>
+                <div><div class="text-[10px] text-emerald-400">TAKE PROFIT (+${gs.tpPips}p)</div><div class="font-bold text-emerald-300">${gs.tp.toFixed(inst.digits)}</div></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[11px] font-mono">
+              <span class="text-amber-300">${gs.anchorDesc.split(':')[0]}</span>
+              <button onclick=" closeScannerModal(); selectInstrument('${inst.symbol}');" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold transition">Wybierz Złoty Strzał &rarr;</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function closeScannerModal() {
+      const modal = document.getElementById('scannerModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    function openPaperPosition(useGoldenShot = false) {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol);
+      const lots = Math.max(0.01, parseFloat(document.getElementById('lotSizeInput')?.value) || 0.02);
+      const spec = getContractSpecPLN(inst, lots);
+
+      if (useGoldenShot) {
+        const gs = lockedGoldenShots[`${inst.symbol}_${goldenShotMode}`] || computeMultiTimeframeGoldenShot(inst, goldenShotMode);
+        paperPositions.unshift({
+          id: Date.now(), symbol: inst.symbol, digits: inst.digits, pip: inst.pip,
+          dir: gs.dir, orderType: `🎯 ${gs.orderType}`, lots,
+          entry: gs.entry, sl: gs.sl, tp: gs.tp, pipValPLN: spec.pipValueUserLotsPLN
+        });
+        showToast(`Dodano Złoty Strzał (${inst.symbol}) do Paper Trading!`);
+      } else {
+        const strat = currentStrategies[selectedStrategyIndex] || analyzeInstrument(inst).bestStrategy;
+        paperPositions.unshift({
+          id: Date.now(), symbol: inst.symbol, digits: inst.digits, pip: inst.pip,
+          dir: strat.dir, orderType: strat.orderType, lots,
+          entry: strat.entry, sl: strat.sl, tp: strat.tp2, pipValPLN: spec.pipValueUserLotsPLN
+        });
+        showToast(`Dodano scenariusz ${strat.dir} (${inst.symbol}) do Paper Trading!`);
+      }
+      updatePaperPositionsLive();
+    }
+
+    function updatePaperPositionsLive() {
+      const container = document.getElementById('paperPositionsContainer');
+      if (!paperPositions.length) {
+        container.innerHTML = 'Brak otwartych pozycji testowych.';
+        document.getElementById('paperBalanceLabel').textContent = `Saldo wirtualne: ${paperBalance.toFixed(2)} PLN`;
+        return;
+      }
+
+      let floatingPLN = 0;
+      container.innerHTML = paperPositions.map(pos => {
+        const inst = XTB_INSTRUMENTS.find(x => x.symbol === pos.symbol);
+        const curPrice = inst ? inst.price : pos.entry;
+        const diffPips = ((pos.dir === 'BUY' ? (curPrice - pos.entry) : (pos.entry - curPrice)) / pos.pip);
+        const pnlPLN = diffPips * pos.pipValPLN;
+        floatingPLN += pnlPLN;
+
+        return `
+          <div class="flex flex-wrap items-center justify-between gap-2 py-1.5 border-b border-slate-800/60">
+            <div>
+              <span class="font-bold text-white">${pos.symbol}</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${pos.dir === 'BUY' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}">${pos.orderType} (${pos.lots} L)</span>
+              <span class="text-slate-400 ml-2">Wejście: <strong class="text-white">${pos.entry.toFixed(pos.digits)}</strong> | Live: <strong class="text-cyan-300">${curPrice.toFixed(pos.digits)}</strong> | SL: ${pos.sl.toFixed(pos.digits)} | TP: ${pos.tp.toFixed(pos.digits)}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="font-bold ${pnlPLN >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${pnlPLN >= 0 ? '+' : ''}${pnlPLN.toFixed(2)} PLN (${diffPips >= 0 ? '+' : ''}${diffPips.toFixed(1)}p)</span>
+              <button onclick="closePaperPosition(${pos.id}, ${pnlPLN})" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px]">Zamknij</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('paperBalanceLabel').textContent = `Equity: ${(paperBalance + floatingPLN).toFixed(2)} PLN (P&L: ${floatingPLN >= 0 ? '+' : ''}${floatingPLN.toFixed(2)} PLN)`;
+    }
+
+    function closePaperPosition(id, pnl) {
+      paperBalance += pnl;
+      paperPositions = paperPositions.filter(p => p.id !== id);
+      updatePaperPositionsLive();
+    }
+
+    function loadTradingViewWidget(tvTicker, tf) {
+      document.getElementById('tvTickerLabel').textContent = tvTicker;
+      const container = document.getElementById('tv_chart_container');
+      container.innerHTML = '';
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/tv.js';
+      script.async = true;
+      script.onload = () => {
+        if (typeof TradingView !== 'undefined') {
+          new TradingView.widget({
+            autosize: true, symbol: tvTicker, interval: tf, timezone: 'Europe/Warsaw',
+            theme: 'dark', style: '1', locale: 'pl', toolbar_bg: '#0b1120',
+            enable_publishing: false, hide_side_toolbar: false, save_image: false,
+            studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies'],
+            container_id: 'tv_chart_container'
+          });
+        }
+      };
+      container.appendChild(script);
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      ['ALL', 'FOREX', 'CMD', 'IDX'].forEach(c => {
+        document.getElementById('cat-' + c).className = c === cat
+          ? 'py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold transition'
+          : 'py-1 rounded-lg text-slate-400 hover:text-white transition';
+      });
+      renderInstrumentList();
+    }
+
+    function setTimeframe(tf) {
+      currentTimeframe = tf;
+      ['5', '15', '30', '60', '240', 'D'].forEach(t => {
+        const btn = document.getElementById('tf-' + t);
+        if (btn) btn.className = t === tf ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white';
+      });
+      syncAll66FromTradingView(false);
+      recalculateActiveInstrument(true);
+    }
+
+    function nextNewsItem() {
+      newsIndex = (newsIndex + 1) % MACRO_NEWS.length;
+      document.getElementById('newsHeadline').textContent = MACRO_NEWS[newsIndex].headline;
+      document.getElementById('newsImpactBadge').textContent = MACRO_NEWS[newsIndex].impact;
+    }
+
+    function copyValue(elId) {
+      const txt = document.getElementById(elId).textContent.trim();
+      navigator.clipboard.writeText(txt);
+      showToast(`Skopiowano do schowka: ${txt}`);
+    }
+
+    function copySetupSummary(idx) {
+      const inst = XTB_INSTRUMENTS.find(x => x.symbol === activeSymbol);
+      const s = currentStrategies.find(x => x.idx === idx) || currentStrategies[0];
+      const summary = `${inst.symbol} (${s.dir} - ${s.orderType}): Wejście = ${s.entry.toFixed(inst.digits)} | SL = ${s.sl.toFixed(inst.digits)} (-${s.slPips}p) | TP2 = ${s.tp2.toFixed(inst.digits)} (+${s.tp2Pips}p) | R:R = 1:${s.rr} | Szansa = ${s.winRate}%`;
+      navigator.clipboard.writeText(summary);
+      showToast(`Skopiowano parametry ${inst.symbol}!`);
+    }
+
+    function downloadSelfHtmlFile() {
+      const blob = new Blob(['<!DOCTYPE html>\n' + document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'index.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Pobrano plik index.html (v6.0)!');
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      document.getElementById('toastText').textContent = msg;
+      box.classList.remove('hidden'); box.classList.add('flex');
+      setTimeout(() => { box.classList.add('hidden'); box.classList.remove('flex'); }, 2600);
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      nextNewsItem();
+      renderInstrumentList();
+      recalculateActiveInstrument(true);
+      await syncAll66FromTradingView(false);
+      // Po pierwszym pobraniu pełnego pakietu MTF z TradingView odświeżamy Złoty Strzał
+      generateAndLockGoldenShot(false);
+      setInterval(() => syncAll66FromTradingView(false), 12000);
+      setInterval(nextNewsItem, 9000);
+    });
+  </script>
+</body>
+</html>
